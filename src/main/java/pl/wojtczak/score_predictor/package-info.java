@@ -1,0 +1,1 @@
+package pl.wojtczak.score_predictor;
