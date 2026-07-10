@@ -47,13 +47,15 @@ public class Match {
     public Match() {
     }
 
-    public Match(String externalMatchId, String stage, LocalDateTime matchDate, String status, Team homeTeam, Team awayTeam, String source) {
+    public Match(String externalMatchId, String stage, LocalDateTime matchDate, String status, Team homeTeam, Integer homeScore, Team awayTeam, Integer awayScore, String source) {
         this.externalMatchId = externalMatchId;
         this.stage = stage;
         this.matchDate = matchDate;
         this.status = status;
         this.homeTeam = homeTeam;
+        this.homeScore = homeScore;
         this.awayTeam = awayTeam;
+        this.awayScore = awayScore;
         this.source = source;
         this.createdAt = LocalDateTime.now();
     }

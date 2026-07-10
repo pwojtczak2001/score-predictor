@@ -2,6 +2,7 @@ package pl.wojtczak.score_predictor.service;
 
 import org.springframework.stereotype.Service;
 import pl.wojtczak.score_predictor.dto.imports.MatchImportDto;
+import pl.wojtczak.score_predictor.entity.Match;
 import pl.wojtczak.score_predictor.entity.Team;
 import java.time.format.DateTimeFormatter;
 
@@ -10,6 +11,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Optional;
 
 @Service
 public class MatchImportService {
@@ -32,23 +34,41 @@ public class MatchImportService {
         List<Team> teams = teamService.getAllTeams();
         Map<String, Team> teamsMap = new HashMap<>();
 
-        for (Team team: teams) {
+        for (Team team : teams) {
             teamsMap.put(team.getName(), team);
         }
 
-        for (MatchImportDto matchImportDto: matches) {
+        for (MatchImportDto matchImportDto : matches) {
 
             String externalMatchId = matchImportDto.getMatchId();
             String stage = matchImportDto.getStage();
-            LocalDateTime matchDate = LocalDateTime.parse(matchImportDto.getDate(),formatter);
+            LocalDateTime matchDate = LocalDateTime.parse(matchImportDto.getDate(), formatter);
             String status = matchImportDto.getStatus();
-            String source = SOURCE;
+            String homeScoreString = matchImportDto.getResult().getHome();
+            String awayScoreString = matchImportDto.getResult().getAway();
+
+            Integer homeScore = null;
+            if (homeScoreString != null) {
+                homeScore = Integer.parseInt(homeScoreString);
+            }
+
+            Integer awayScore = null;
+            if (awayScoreString != null) {
+                awayScore = Integer.parseInt(awayScoreString);
+            }
 
             Team homeTeam = teamsMap.get(matchImportDto.getHomeTeam().getName());
             Team awayTeam = teamsMap.get(matchImportDto.getAwayTeam().getName());
 
-            matchService.addMatchIfNotExists(externalMatchId, stage, matchDate, status, homeTeam, awayTeam, source);
+            Match importedMatch = new Match(externalMatchId, stage, matchDate, status, homeTeam, homeScore, awayTeam, awayScore, SOURCE);
+            Optional<Match> existingMatch = matchService.findMatchByExternalMatchId(importedMatch.getExternalMatchId());
+
+            if (existingMatch.isPresent()) {
+                matchService.synchronizeMatch(existingMatch.get(), importedMatch);
+
+            } else {
+                matchService.addMatch(importedMatch);
+            }
         }
     }
-
 }

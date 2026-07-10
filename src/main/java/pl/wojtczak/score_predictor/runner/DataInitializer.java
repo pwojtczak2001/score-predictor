@@ -54,6 +54,5 @@ public class DataInitializer implements CommandLineRunner {
         System.out.println(team + "\n");
 
         matchImportService.importMatches();
-
     }
 }

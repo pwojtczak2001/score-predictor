@@ -2,11 +2,10 @@ package pl.wojtczak.score_predictor.service;
 
 import org.springframework.stereotype.Service;
 import pl.wojtczak.score_predictor.entity.Match;
-import pl.wojtczak.score_predictor.entity.Team;
 import pl.wojtczak.score_predictor.repository.MatchRepository;
 
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class MatchService {
@@ -18,19 +17,11 @@ public class MatchService {
     }
 
 
-    public void addMatch(String externalMatchId, String stage, LocalDateTime matchDate, String status, Team homeTeam, Team awayTeam, String source){
-        if(matchRepository.existsByExternalMatchId(externalMatchId)){
-            throw new IllegalArgumentException("Match with external ID '" + externalMatchId + "' already exists.");
+    public void addMatch(Match match){
+        if(matchRepository.existsByExternalMatchId(match.getExternalMatchId())){
+            throw new IllegalArgumentException("Match with external ID '" + match.getExternalMatchId() + "' already exists.");
         }
-        Match match = new Match(externalMatchId, stage, matchDate, status, homeTeam, awayTeam, source);
         matchRepository.save(match);
-    }
-
-    public void addMatchIfNotExists(String externalMatchId, String stage, LocalDateTime matchDate, String status, Team homeTeam, Team awayTeam, String source){
-        if(matchRepository.existsByExternalMatchId(externalMatchId)){
-            return;
-        }
-        addMatch(externalMatchId, stage, matchDate, status, homeTeam, awayTeam, source);
     }
 
     public List<Match> getAllMatches() {
@@ -45,4 +36,15 @@ public class MatchService {
                                         "The state of the application is inconsistent with our business assumptions."));
     }
 
+    public Optional<Match> findMatchByExternalMatchId(String externalMatchId) {
+        return matchRepository.findByExternalMatchId(externalMatchId);
+    }
+
+    public void synchronizeMatch(Match existingMatch, Match importedMatch) {
+        existingMatch.setMatchDate(importedMatch.getMatchDate());
+        existingMatch.setStatus(importedMatch.getStatus());
+        existingMatch.setHomeScore(importedMatch.getHomeScore());
+        existingMatch.setAwayScore(importedMatch.getAwayScore());
+        matchRepository.save(existingMatch);
+        }
 }

@@ -2,17 +2,17 @@ package pl.wojtczak.score_predictor.dto.imports;
 
 public class ResultImportDto {
 
-    private Integer home;
-    private Integer away;
+    private String home;
+    private String away;
 
     public ResultImportDto() {
     }
 
-    public Integer getHome() {
+    public String getHome() {
         return home;
     }
 
-    public Integer getAway() {
+    public String getAway() {
         return away;
     }
 }
