@@ -31,12 +31,18 @@ public class MatchImportService {
 
     public void importMatches() throws IOException {
         List<MatchImportDto> matches = jsonFileService.loadMatches();
+        Map<String, Match> existingMatchesMap = new HashMap<>();
         List<Team> teams = teamService.getAllTeams();
         Map<String, Team> teamsMap = new HashMap<>();
 
         for (Team team : teams) {
             teamsMap.put(team.getName(), team);
         }
+
+        for (Match match : matchService.getAllMatches()){
+            existingMatchesMap.put(match.getExternalMatchId(), match);
+        }
+
 
         for (MatchImportDto matchImportDto : matches) {
 
@@ -61,7 +67,7 @@ public class MatchImportService {
             Team awayTeam = teamsMap.get(matchImportDto.getAwayTeam().getName());
 
             Match importedMatch = new Match(externalMatchId, stage, matchDate, status, homeTeam, homeScore, awayTeam, awayScore, SOURCE);
-            Optional<Match> existingMatch = matchService.findMatchByExternalMatchId(importedMatch.getExternalMatchId());
+            Optional<Match> existingMatch = Optional.ofNullable(existingMatchesMap.get(externalMatchId));
 
             if (existingMatch.isPresent()) {
                 matchService.synchronizeMatch(existingMatch.get(), importedMatch);

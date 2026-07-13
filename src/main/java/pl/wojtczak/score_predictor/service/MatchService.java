@@ -41,6 +41,9 @@ public class MatchService {
     }
 
     public void synchronizeMatch(Match existingMatch, Match importedMatch) {
+        if ("FINISHED".equals(existingMatch.getStatus())) {
+            return;
+        }
         existingMatch.setMatchDate(importedMatch.getMatchDate());
         existingMatch.setStatus(importedMatch.getStatus());
         existingMatch.setHomeScore(importedMatch.getHomeScore());
