@@ -11,9 +11,11 @@ import java.util.Optional;
 public class MatchService {
 
     private final MatchRepository matchRepository;
+    private final ScoringService scoringService;
 
-    public MatchService(MatchRepository matchRepository) {
+    public MatchService(MatchRepository matchRepository, ScoringService scoringService) {
         this.matchRepository = matchRepository;
+        this.scoringService = scoringService;
     }
 
 
@@ -41,13 +43,23 @@ public class MatchService {
     }
 
     public void synchronizeMatch(Match existingMatch, Match importedMatch) {
+        boolean matchJustFinished =
+                !"FINISHED".equals(existingMatch.getStatus())
+                        && "FINISHED".equals(importedMatch.getStatus());
+
         if ("FINISHED".equals(existingMatch.getStatus())) {
             return;
         }
+
         existingMatch.setMatchDate(importedMatch.getMatchDate());
         existingMatch.setStatus(importedMatch.getStatus());
         existingMatch.setHomeScore(importedMatch.getHomeScore());
         existingMatch.setAwayScore(importedMatch.getAwayScore());
         matchRepository.save(existingMatch);
+
+
+        if (matchJustFinished) {
+            scoringService.calculateAndAwardPoints(existingMatch);
         }
+    }
 }
