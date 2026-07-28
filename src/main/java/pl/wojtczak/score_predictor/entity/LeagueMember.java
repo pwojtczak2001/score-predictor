@@ -11,12 +11,12 @@ public class LeagueMember {
     @EmbeddedId
     private LeagueMemberId id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "league_id", referencedColumnName = "league_id", nullable = false, updatable = false)
     @MapsId("leagueId")
     private League league;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "user_id", nullable = false, updatable = false)
     @MapsId("userId")
     private User user;

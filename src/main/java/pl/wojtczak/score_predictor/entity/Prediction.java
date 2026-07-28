@@ -13,11 +13,11 @@ public class Prediction {
     @Column(name = "prediction_id")
     private Integer predictionId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "match_id", referencedColumnName = "match_id", nullable = false, updatable = false)
     private Match match;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "user_id", nullable = false, updatable = false)
     private User user;
 

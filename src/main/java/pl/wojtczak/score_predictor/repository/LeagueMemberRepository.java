@@ -17,4 +17,6 @@ public interface LeagueMemberRepository extends JpaRepository<LeagueMember, Leag
 
     List<LeagueMember> findByUserIn(Set<User> users);
 
+    List<LeagueMember> findByLeagueOrderByCurrentPointsDesc(League league);
+
 }

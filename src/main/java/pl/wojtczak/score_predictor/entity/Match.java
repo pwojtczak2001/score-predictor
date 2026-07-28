@@ -23,11 +23,11 @@ public class Match {
     @Column(length = 30, nullable = false)
     private String status;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "home_team_id", referencedColumnName = "team_id", nullable = false, updatable = false)
     private Team homeTeam;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "away_team_id", referencedColumnName = "team_id", nullable = false, updatable = false)
     private Team awayTeam;
 

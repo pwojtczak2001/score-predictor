@@ -1,12 +1,14 @@
 package pl.wojtczak.score_predictor.service;
 
 import org.springframework.stereotype.Service;
+import pl.wojtczak.score_predictor.dto.league.LeagueRankingDto;
 import pl.wojtczak.score_predictor.entity.League;
 import pl.wojtczak.score_predictor.entity.LeagueMember;
 import pl.wojtczak.score_predictor.entity.User;
 import pl.wojtczak.score_predictor.enums.LeagueJoinStatus;
 import pl.wojtczak.score_predictor.repository.LeagueMemberRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -38,5 +40,22 @@ public class LeagueMemberService {
 
     public List<LeagueMember> getMembershipsOfUser(User user) {
         return leagueMemberRepository.findByUser(user);
+    }
+
+    public List<LeagueRankingDto> getLeagueRanking(League league) {
+        List<LeagueMember> members = leagueMemberRepository.findByLeagueOrderByCurrentPointsDesc(league);
+        List<LeagueRankingDto> ranking = new ArrayList<>();
+
+        int position = 1;
+
+        for (LeagueMember member : members) {
+
+            ranking.add(new LeagueRankingDto(
+                    position++,
+                    member.getUser().getUsername(),
+                    member.getCurrentPoints()
+            ));
+        }
+        return ranking;
     }
 }
