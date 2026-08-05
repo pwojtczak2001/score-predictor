@@ -1,12 +1,16 @@
 package pl.wojtczak.score_predictor.entity;
 
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.Collections;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 @Entity
 @Table(name = "users")
-public class User {
+public class User implements UserDetails{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,16 +43,23 @@ public class User {
         return userId;
     }
 
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public String getPassword() {
+        return passwordHash;
+    }
+
+    @Override
     public String getUsername() {
         return username;
     }
 
     public String getEmail(){
         return email;
-    }
-
-    public String getPasswordHash() {
-        return passwordHash;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -63,7 +74,7 @@ public class User {
         this.email = email;
     }
 
-    public void setPasswordHash(String password_hash) {
-        this.passwordHash = password_hash;
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
     }
 }

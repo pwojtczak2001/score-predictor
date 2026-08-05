@@ -1,6 +1,7 @@
 package pl.wojtczak.score_predictor.service;
 
 import org.springframework.stereotype.Service;
+import pl.wojtczak.score_predictor.dto.league.LeagueRankingDto;
 import pl.wojtczak.score_predictor.entity.League;
 import pl.wojtczak.score_predictor.entity.User;
 import pl.wojtczak.score_predictor.enums.LeagueJoinStatus;
@@ -58,5 +59,13 @@ public class LeagueService {
         }
         return leagueMemberService.addUserToLeague(optionalLeague.get(), user);
     }
+
+    public List<LeagueRankingDto> getLeagueRanking(Integer leagueId) {
+        League league = leagueRepository.findById(leagueId)
+                .orElseThrow(() -> new IllegalArgumentException("League not found"));
+
+        return leagueMemberService.getLeagueRanking(league);
+    }
+
 
 }

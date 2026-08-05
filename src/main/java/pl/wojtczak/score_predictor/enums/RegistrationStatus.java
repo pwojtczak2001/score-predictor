@@ -5,5 +5,5 @@ public enum RegistrationStatus {
     USERNAME_TAKEN,
     EMAIL_TAKEN,
     INVALID_EMAIL,
-    WEAK_PASSWORD
+    WEAK_PASSWORD,
 }
