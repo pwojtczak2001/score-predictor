@@ -8,7 +8,7 @@ import pl.wojtczak.score_predictor.service.LeagueService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/leagues")
+@RequestMapping("/leagues")
 public class LeagueController {
 
     private final LeagueService leagueService;

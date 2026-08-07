@@ -43,6 +43,7 @@ public class MatchImportService {
             existingMatchesMap.put(match.getExternalMatchId(), match);
         }
 
+        // TODO: Validate imported match data before parsing (date, teams, result)
 
         for (MatchImportDto matchImportDto : matches) {
 
@@ -50,6 +51,11 @@ public class MatchImportService {
             String stage = matchImportDto.getStage();
             LocalDateTime matchDate = LocalDateTime.parse(matchImportDto.getDate(), formatter);
             String status = matchImportDto.getStatus();
+
+            if (status == null || status.isBlank()) {
+                status = "NOT STARTED";
+            }
+
             String homeScoreString = matchImportDto.getResult().getHome();
             String awayScoreString = matchImportDto.getResult().getAway();
 

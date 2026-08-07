@@ -27,7 +27,7 @@ public class Prediction {
     @Column(name = "predicted_away_score", nullable = false, length = 2, columnDefinition = "INT CHECK (predicted_away_score >= 0 AND predicted_away_score <= 99)")
     private Integer predictedAwayScore;
 
-    @Column(name = "points_awarded", nullable = false, length = 3, columnDefinition = "INT CHECK (points_awarded >= 0 AND points_awarded <= 918)")
+    @Column(name = "points_awarded", length = 3, columnDefinition = "INT CHECK (points_awarded >= 0 AND points_awarded <= 918)")
     private Integer pointsAwarded;
 
     @Column(name = "created_at", nullable = false, updatable = false)

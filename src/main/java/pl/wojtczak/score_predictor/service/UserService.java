@@ -1,8 +1,11 @@
 package pl.wojtczak.score_predictor.service;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import pl.wojtczak.score_predictor.dto.auth.RegisterRequest;
+import pl.wojtczak.score_predictor.dto.response.UserResponse;
 import pl.wojtczak.score_predictor.entity.User;
 import pl.wojtczak.score_predictor.enums.RegistrationStatus;
 import pl.wojtczak.score_predictor.repository.UserRepository;
@@ -58,5 +61,15 @@ public class UserService {
                                         "The state of the application is inconsistent with our business assumptions."));
     }
 
+    public User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return (User) authentication.getPrincipal();
+    }
+
+
+    public UserResponse getCurrentUserProfile(){
+        User currentUser = getCurrentUser();
+        return new UserResponse(currentUser.getUserId(), currentUser.getUsername(), currentUser.getEmail());
+    }
 
 }

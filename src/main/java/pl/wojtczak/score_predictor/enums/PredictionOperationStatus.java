@@ -1,6 +1,6 @@
 package pl.wojtczak.score_predictor.enums;
 
-public enum PredictionStatus {
+public enum PredictionOperationStatus {
 
     PREDICTION_ALREADY_EXISTS,
     PREDICTION_NOT_FOUND,
