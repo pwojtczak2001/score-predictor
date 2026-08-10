@@ -1,5 +1,6 @@
 package pl.wojtczak.score_predictor.repository;
 
+import jakarta.persistence.criteria.CriteriaBuilder;
 import org.springframework.data.jpa.repository.JpaRepository;
 import pl.wojtczak.score_predictor.entity.League;
 import pl.wojtczak.score_predictor.entity.LeagueMember;
@@ -18,5 +19,7 @@ public interface LeagueMemberRepository extends JpaRepository<LeagueMember, Leag
     List<LeagueMember> findByUserIn(Set<User> users);
 
     List<LeagueMember> findByLeagueOrderByCurrentPointsDesc(League league);
+
+    Integer countByLeague(League league);
 
 }

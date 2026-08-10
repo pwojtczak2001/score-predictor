@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import pl.wojtczak.score_predictor.dto.league.LeagueRankingDto;
 import pl.wojtczak.score_predictor.dto.request.CreateLeagueRequest;
 import pl.wojtczak.score_predictor.dto.request.JoinLeagueRequest;
+import pl.wojtczak.score_predictor.dto.response.MyLeagueResponse;
 import pl.wojtczak.score_predictor.entity.User;
 import pl.wojtczak.score_predictor.enums.LeagueJoinStatus;
 import pl.wojtczak.score_predictor.service.LeagueService;
@@ -40,6 +41,12 @@ public class LeagueController {
     public LeagueJoinStatus joinLeague(@RequestBody JoinLeagueRequest request) {
         User currentUser = userService.getCurrentUser();
         return leagueService.joinLeague(request.getInviteCode(), currentUser);
+    }
+
+    @GetMapping("/my")
+    public List<MyLeagueResponse> getMyLeagues() {
+        User currentUser = userService.getCurrentUser();
+        return leagueService.getLeaguesForUser(currentUser);
     }
 
 }

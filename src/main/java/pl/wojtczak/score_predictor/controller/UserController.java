@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import pl.wojtczak.score_predictor.dto.response.UserResponse;
+import pl.wojtczak.score_predictor.dto.response.UserStatsResponse;
 import pl.wojtczak.score_predictor.service.UserService;
 
 @RestController
@@ -21,5 +22,10 @@ public class UserController {
     @GetMapping("/me")
     public UserResponse getCurrentUserProfile() {
         return userService.getCurrentUserProfile();
+    }
+
+    @GetMapping("stats")
+    public UserStatsResponse getCurrentUserStats() {
+        return userService.getCurrentUserStats();
     }
 }

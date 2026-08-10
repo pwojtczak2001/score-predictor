@@ -6,6 +6,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import pl.wojtczak.score_predictor.dto.auth.RegisterRequest;
 import pl.wojtczak.score_predictor.dto.response.UserResponse;
+import pl.wojtczak.score_predictor.dto.response.UserStatsResponse;
 import pl.wojtczak.score_predictor.entity.User;
 import pl.wojtczak.score_predictor.enums.RegistrationStatus;
 import pl.wojtczak.score_predictor.repository.UserRepository;
@@ -16,9 +17,12 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
 
-    public UserService(PasswordEncoder passwordEncoder, UserRepository userRepository) {
+    private final PredictionService predictionService;
+
+    public UserService(PasswordEncoder passwordEncoder, UserRepository userRepository, PredictionService predictionService) {
         this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
+        this.predictionService = predictionService;
     }
 
     public RegistrationStatus registerUser(RegisterRequest request) {
@@ -70,6 +74,11 @@ public class UserService {
     public UserResponse getCurrentUserProfile(){
         User currentUser = getCurrentUser();
         return new UserResponse(currentUser.getUserId(), currentUser.getUsername(), currentUser.getEmail());
+    }
+
+    public UserStatsResponse getCurrentUserStats() {
+        User currentUser = getCurrentUser();
+        return predictionService.getUserStats(currentUser);
     }
 
 }

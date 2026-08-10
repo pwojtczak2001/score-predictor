@@ -11,4 +11,6 @@ public interface LeagueRepository extends JpaRepository<League, Integer> {
 
     Optional<League> findByInviteCode(String inviteCode);
 
+
+
 }

@@ -2,6 +2,7 @@ package pl.wojtczak.score_predictor.service;
 
 import org.springframework.stereotype.Service;
 import pl.wojtczak.score_predictor.dto.league.LeagueRankingDto;
+import pl.wojtczak.score_predictor.dto.response.MyLeagueResponse;
 import pl.wojtczak.score_predictor.entity.League;
 import pl.wojtczak.score_predictor.entity.LeagueMember;
 import pl.wojtczak.score_predictor.entity.User;
