@@ -1,24 +1,27 @@
 package pl.wojtczak.score_predictor.dto.auth;
 
+import pl.wojtczak.score_predictor.enums.RegistrationStatus;
+
 public class AuthResponse {
 
     private String token;
     private boolean success;
-    private String message;
 
     private Integer userId;
 
     private String username;
 
+    private RegistrationStatus registrationStatus;
+
     public AuthResponse() {
     }
 
-    public AuthResponse(String token, boolean success, String message, Integer userId, String username) {
+    public AuthResponse(String token, boolean success, Integer userId, String username, RegistrationStatus registrationStatus) {
         this.token = token;
         this.success = success;
-        this.message = message;
         this.userId = userId;
         this.username = username;
+        this.registrationStatus = registrationStatus;
     }
 
     public String getToken() {
@@ -37,14 +40,6 @@ public class AuthResponse {
         this.success = success;
     }
 
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
     public Integer getUserId() {
         return userId;
     }
@@ -59,6 +54,14 @@ public class AuthResponse {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public RegistrationStatus getRegistrationStatus() {
+        return registrationStatus;
+    }
+
+    public void setRegistrationStatus(RegistrationStatus registrationStatus) {
+        this.registrationStatus = registrationStatus;
     }
 
 }

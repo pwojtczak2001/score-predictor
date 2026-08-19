@@ -24,6 +24,8 @@ The application:
 - synchronizes match information,
 - allows users to register and authenticate,
 - enables users to create or join private leagues,
+- provides personal prediction statistics,
+- allows users to participate individually or in private leagues,
 - allows predicting match scores,
 - automatically locks predictions after kick-off,
 - awards points when matches finish,
@@ -48,6 +50,8 @@ The application follows the workflow below:
 9. Finished matches are synchronized.
 10. Prediction points are calculated automatically.
 11. League rankings are updated automatically.
+12. Users can view their personal prediction statistics.
+13. Users can participate individually or compete inside private leagues.
 
 ---
 
@@ -75,7 +79,8 @@ When a match changes its status to **FINISHED**, the application automatically:
 - calculates awarded points,
 - stores awarded points,
 - updates every league member's total score,
-- refreshes league rankings.
+- refreshes league rankings,
+- updates users' personal prediction statistics.
 
 ---
 
@@ -89,6 +94,7 @@ When a match changes its status to **FINISHED**, the application automatically:
 - ✅ BCrypt password hashing
 - ✅ Stateless authentication
 - ✅ Get authenticated user profile
+- ✅ Personal prediction statistics
 
 ---
 
@@ -107,12 +113,15 @@ When a match changes its status to **FINISHED**, the application automatically:
 
 ## Private Leagues
 
+## Private Leagues
+
 - ✅ League domain model
+- ✅ Create private leagues
+- ✅ Join private leagues via invitation code
 - ✅ Unique invitation code generation
 - ✅ League membership management
 - ✅ League ranking calculation
-- 🚧 League creation endpoint
-- 🚧 League join endpoint
+- ✅ User league overview
 
 ---
 
@@ -123,6 +132,7 @@ When a match changes its status to **FINISHED**, the application automatically:
 - ✅ One prediction per user per match
 - ✅ Automatic prediction locking after kick-off
 - ✅ Prediction validation
+- ✅ Prediction editing before kick-off
 
 ---
 
@@ -133,6 +143,7 @@ When a match changes its status to **FINISHED**, the application automatically:
 - ✅ Correct winner/draw evaluation
 - ✅ Automatic league score updates
 - ✅ Automatic ranking generation
+- ✅ Personal statistics generation
 
 ---
 
@@ -339,6 +350,7 @@ Shows all possible authentication paths:
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/users/me` | Get the authenticated user's profile |
+| GET | `/users/stats` | Get the authenticated user's prediction statistics |
 
 
 ## Matches
@@ -360,7 +372,10 @@ Shows all possible authentication paths:
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/leagues/{leagueId}/ranking` | Get the ranking of a private league |
+| GET    | `/leagues/{leagueId}/ranking` | Get the ranking of a private league |
+| GET    | `/leagues/my` | Get all leagues of the authenticated user |
+| POST   | `/leagues/join` | Join a league using an invitation code |
+| POST    | `/leagues` | Create a private league |
 
 ---
 
@@ -381,6 +396,11 @@ score-predictor
 │   ├── config
 │   ├── controller
 │   ├── dto
+│       ├── request
+│       ├── response
+│       ├── imports
+│       ├── league
+│       └── auth     
 │   ├── entity
 │   ├── enums
 │   ├── repository

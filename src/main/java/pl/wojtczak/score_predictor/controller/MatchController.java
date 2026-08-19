@@ -1,6 +1,7 @@
 package pl.wojtczak.score_predictor.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,9 +27,9 @@ public class MatchController {
     }
 
     @GetMapping("/upcoming")
-    public List<UpcomingMatchResponse> getUpcomingMatches() {
+    public ResponseEntity<List<UpcomingMatchResponse>> getUpcomingMatches() {
         User currentUser = userService.getCurrentUser();
-        return matchService.getUpcomingMatches(currentUser);
+        return ResponseEntity.ok(matchService.getUpcomingMatches(currentUser));
     }
 
 }

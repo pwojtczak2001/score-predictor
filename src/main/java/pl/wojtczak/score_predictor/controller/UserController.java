@@ -1,6 +1,7 @@
 package pl.wojtczak.score_predictor.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,12 +21,12 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    public UserResponse getCurrentUserProfile() {
-        return userService.getCurrentUserProfile();
+    public ResponseEntity<UserResponse> getCurrentUserProfile() {
+        return ResponseEntity.ok(userService.getCurrentUserProfile());
     }
 
-    @GetMapping("stats")
-    public UserStatsResponse getCurrentUserStats() {
-        return userService.getCurrentUserStats();
+    @GetMapping("/stats")
+    public ResponseEntity<UserStatsResponse> getCurrentUserStats() {
+        return ResponseEntity.ok(userService.getCurrentUserStats());
     }
 }

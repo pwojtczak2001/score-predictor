@@ -9,6 +9,7 @@ import pl.wojtczak.score_predictor.dto.response.UserResponse;
 import pl.wojtczak.score_predictor.dto.response.UserStatsResponse;
 import pl.wojtczak.score_predictor.entity.User;
 import pl.wojtczak.score_predictor.enums.RegistrationStatus;
+import pl.wojtczak.score_predictor.exception.UserNotFoundException;
 import pl.wojtczak.score_predictor.repository.UserRepository;
 
 @Service
@@ -51,18 +52,12 @@ public class UserService {
 
     public User getUserByUsername(String username) {
         return userRepository.findByUsername(username)
-                .orElseThrow(() ->
-                        new IllegalArgumentException(
-                                "User with username '" + username + "' not found. " +
-                                        "The state of the application is inconsistent with our business assumptions."));
+                .orElseThrow(() -> new UserNotFoundException(username));
     }
 
     public User getUserById(Integer userId) {
         return userRepository.findById(userId)
-                .orElseThrow(() ->
-                        new IllegalArgumentException(
-                                "User with ID '" + userId + "' not found. " +
-                                        "The state of the application is inconsistent with our business assumptions."));
+                .orElseThrow(() -> new UserNotFoundException(userId));
     }
 
     public User getCurrentUser() {

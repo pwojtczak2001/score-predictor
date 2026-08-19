@@ -2,11 +2,13 @@ package pl.wojtczak.score_predictor.service;
 
 import org.springframework.stereotype.Service;
 import pl.wojtczak.score_predictor.dto.league.LeagueRankingDto;
+import pl.wojtczak.score_predictor.dto.response.CreateLeagueResponse;
 import pl.wojtczak.score_predictor.dto.response.MyLeagueResponse;
 import pl.wojtczak.score_predictor.entity.League;
 import pl.wojtczak.score_predictor.entity.LeagueMember;
 import pl.wojtczak.score_predictor.entity.User;
 import pl.wojtczak.score_predictor.enums.LeagueJoinStatus;
+import pl.wojtczak.score_predictor.exception.LeagueNotFoundException;
 import pl.wojtczak.score_predictor.repository.LeagueMemberRepository;
 import pl.wojtczak.score_predictor.repository.LeagueRepository;
 
@@ -47,12 +49,12 @@ public class LeagueService {
         return inviteCode;
     }
 
-    public String createLeague(String name, User owner) {
+    public CreateLeagueResponse createLeague(String name, User owner) {
         String inviteCode = generateUniqueInviteCode();
         League league = new League(name, inviteCode, owner);
         leagueRepository.save(league);
         leagueMemberService.addUserToLeague(league, owner);
-        return inviteCode;
+        return new CreateLeagueResponse(league.getLeagueId(), league.getName(), league.getInviteCode());
     }
 
     public List<League> getAllLeagues() {
@@ -69,7 +71,7 @@ public class LeagueService {
 
     public List<LeagueRankingDto> getLeagueRanking(Integer leagueId) {
         League league = leagueRepository.findById(leagueId)
-                .orElseThrow(() -> new IllegalArgumentException("League not found"));
+                .orElseThrow(() -> new LeagueNotFoundException(leagueId));
 
         return leagueMemberService.getLeagueRanking(league);
     }

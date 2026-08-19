@@ -5,6 +5,8 @@ import pl.wojtczak.score_predictor.dto.response.UpcomingMatchResponse;
 import pl.wojtczak.score_predictor.entity.Match;
 import pl.wojtczak.score_predictor.entity.Prediction;
 import pl.wojtczak.score_predictor.entity.User;
+import pl.wojtczak.score_predictor.exception.MatchAlreadyExistsException;
+import pl.wojtczak.score_predictor.exception.MatchNotFoundException;
 import pl.wojtczak.score_predictor.repository.MatchRepository;
 import pl.wojtczak.score_predictor.repository.PredictionRepository;
 
@@ -28,7 +30,7 @@ public class MatchService {
 
     public void addMatch(Match match){
         if(matchRepository.existsByExternalMatchId(match.getExternalMatchId())){
-            throw new IllegalArgumentException("Match with external ID '" + match.getExternalMatchId() + "' already exists.");
+            throw new MatchAlreadyExistsException(match.getExternalMatchId());
         }
         matchRepository.save(match);
     }
@@ -39,10 +41,7 @@ public class MatchService {
 
     public Match getMatchByExternalId(String externalMatchId) {
         return matchRepository.findByExternalMatchId(externalMatchId)
-                .orElseThrow(() ->
-                        new IllegalArgumentException(
-                                "Match with external ID '" + externalMatchId + "' not found. " +
-                                        "The state of the application is inconsistent with our business assumptions."));
+                .orElseThrow(() -> new MatchNotFoundException(externalMatchId));
     }
 
     public Optional<Match> findMatchByExternalMatchId(String externalMatchId) {
