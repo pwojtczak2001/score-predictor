@@ -29,6 +29,15 @@ public class User implements UserDetails{
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(nullable = false)
+    private Integer xp = 0;
+
+    @Column(nullable = false)
+    private Integer coins = 0;
+
+    @Column(nullable = false)
+    private Integer level = 1;
+
     public User() {
     }
 
@@ -37,6 +46,9 @@ public class User implements UserDetails{
         this.email = email;
         this.passwordHash = passwordHash;
         this.createdAt = LocalDateTime.now();
+        this.xp = 0;
+        this.coins = 0;
+        this.level = 1;
     }
 
     public Integer getUserId() {
@@ -66,6 +78,18 @@ public class User implements UserDetails{
         return createdAt;
     }
 
+    public Integer getXp() {
+        return xp;
+    }
+
+    public Integer getCoins() {
+        return coins;
+    }
+
+    public Integer getLevel() {
+        return level;
+    }
+
     public void setUsername(String username) {
         this.username = username;
     }
@@ -76,5 +100,17 @@ public class User implements UserDetails{
 
     public void setPasswordHash(String passwordHash) {
         this.passwordHash = passwordHash;
+    }
+
+    public void setXp(Integer xp) {
+        this.xp = xp;
+    }
+
+    public void setCoins(Integer coins) {
+        this.coins = coins;
+    }
+
+    public void setLevel(Integer level) {
+        this.level = level;
     }
 }

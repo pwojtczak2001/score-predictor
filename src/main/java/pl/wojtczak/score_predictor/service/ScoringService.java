@@ -22,10 +22,13 @@ public class ScoringService {
 
     private final LeagueMemberRepository leagueMemberRepository;
 
+    private final PlayerProgressionService playerProgressionService;
 
-    public ScoringService(PredictionRepository predictionRepository, LeagueMemberRepository leagueMemberRepository) {
+
+    public ScoringService(PredictionRepository predictionRepository, LeagueMemberRepository leagueMemberRepository, PlayerProgressionService playerProgressionService) {
         this.predictionRepository = predictionRepository;
         this.leagueMemberRepository = leagueMemberRepository;
+        this.playerProgressionService = playerProgressionService;
     }
 
     private int calculatePoints(Match match, Prediction prediction) {
@@ -71,6 +74,7 @@ public class ScoringService {
         for (Prediction prediction : predictions) {
             if(prediction.getPointsAwarded() != null) continue;
             int awardedPoints = calculatePoints(match, prediction);
+            playerProgressionService.processPredictionResult(prediction.getUser(), awardedPoints);
             prediction.setPointsAwarded(awardedPoints);
 
             userLeagueMembersMap.get(prediction.getUser()).forEach(leagueMember -> {

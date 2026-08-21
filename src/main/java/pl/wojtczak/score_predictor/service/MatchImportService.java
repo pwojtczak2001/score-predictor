@@ -1,5 +1,6 @@
 package pl.wojtczak.score_predictor.service;
 
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import pl.wojtczak.score_predictor.dto.imports.MatchImportDto;
 import pl.wojtczak.score_predictor.entity.Match;
@@ -29,6 +30,7 @@ public class MatchImportService {
         this.matchService = matchService;
     }
 
+    @Transactional
     public void importMatches() throws IOException {
         List<MatchImportDto> matches = jsonFileService.loadMatches();
         Map<String, Match> existingMatchesMap = new HashMap<>();
@@ -77,9 +79,16 @@ public class MatchImportService {
 
             if (existingMatch.isPresent()) {
                 matchService.synchronizeMatch(existingMatch.get(), importedMatch);
+                existingMatchesMap.remove(externalMatchId);
 
             } else {
                 matchService.addMatch(importedMatch);
+            }
+        }
+
+        for (Match match : existingMatchesMap.values()) {
+            if (!"FINISHED".equals(match.getStatus())) {
+                matchService.deleteMatch(match);
             }
         }
     }

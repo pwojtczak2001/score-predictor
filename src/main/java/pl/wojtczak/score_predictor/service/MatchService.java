@@ -1,5 +1,6 @@
 package pl.wojtczak.score_predictor.service;
 
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import pl.wojtczak.score_predictor.dto.response.UpcomingMatchResponse;
 import pl.wojtczak.score_predictor.entity.Match;
@@ -88,5 +89,10 @@ public class MatchService {
             ));
         }
         return upcomingMatchesResponse;
+    }
+
+    public void deleteMatch(Match match) {
+        predictionRepository.deleteByMatch(match);
+        matchRepository.delete(match);
     }
 }
