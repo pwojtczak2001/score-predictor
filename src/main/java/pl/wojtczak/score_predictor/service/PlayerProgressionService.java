@@ -9,9 +9,16 @@ public class PlayerProgressionService {
     private static final int XP_PER_LEVEL = 9;
 
     public void awardXp(User user, int amount) {
+        int oldLevel = user.getLevel();
+
         user.setXp(user.getXp() + amount);
+
         int newLevel = user.getXp() / XP_PER_LEVEL + 1;
         user.setLevel(newLevel);
+
+        if (newLevel > oldLevel) {
+            awardCoins(user, (newLevel - oldLevel) * 10);
+        }
     }
 
     public void awardCoins(User user, int amount) {

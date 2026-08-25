@@ -32,7 +32,8 @@ public class GlobalExceptionHandler {
             MatchNotFoundException.class,
             UserNotFoundException.class,
             LeagueNotFoundException.class,
-            TeamNotFoundException.class
+            TeamNotFoundException.class,
+            AchievementNotFoundException.class
     })
     public ResponseEntity<ErrorResponse> handleNotFoundExceptions(RuntimeException ex) {
         return buildErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage());

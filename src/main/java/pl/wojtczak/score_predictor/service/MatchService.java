@@ -50,12 +50,19 @@ public class MatchService {
     }
 
     public void synchronizeMatch(Match existingMatch, Match importedMatch) {
+
+        if ("FINISHED".equals(existingMatch.getStatus())) {
+            return;
+        }
+
+        boolean matchDateChanged =
+                !existingMatch.getMatchDate().equals(importedMatch.getMatchDate());
         boolean matchJustFinished =
                 !"FINISHED".equals(existingMatch.getStatus())
                         && "FINISHED".equals(importedMatch.getStatus());
 
-        if ("FINISHED".equals(existingMatch.getStatus())) {
-            return;
+        if (matchDateChanged) {
+            predictionRepository.deleteByMatch(existingMatch);
         }
 
         existingMatch.setMatchDate(importedMatch.getMatchDate());

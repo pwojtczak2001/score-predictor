@@ -23,12 +23,14 @@ public class ScoringService {
     private final LeagueMemberRepository leagueMemberRepository;
 
     private final PlayerProgressionService playerProgressionService;
+    private final AchievementService achievementService;
 
 
-    public ScoringService(PredictionRepository predictionRepository, LeagueMemberRepository leagueMemberRepository, PlayerProgressionService playerProgressionService) {
+    public ScoringService(PredictionRepository predictionRepository, LeagueMemberRepository leagueMemberRepository, PlayerProgressionService playerProgressionService, AchievementService achievementService) {
         this.predictionRepository = predictionRepository;
         this.leagueMemberRepository = leagueMemberRepository;
         this.playerProgressionService = playerProgressionService;
+        this.achievementService = achievementService;
     }
 
     private int calculatePoints(Match match, Prediction prediction) {
@@ -83,6 +85,7 @@ public class ScoringService {
             });
 
             predictionRepository.save(prediction);
+            achievementService.checkExactScoreAchievements(prediction.getUser());
         }
     }
 

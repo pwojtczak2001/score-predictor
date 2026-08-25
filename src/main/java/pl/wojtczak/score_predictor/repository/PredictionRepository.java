@@ -13,4 +13,5 @@ public interface PredictionRepository extends JpaRepository<Prediction, Integer>
     Optional<Prediction> findByMatchAndUser(Match match, User user);
     boolean existsByMatchAndUser(Match match, User user);
     void deleteByMatch(Match match);
+    long countByUserAndPointsAwarded(User user, Integer pointsAwarded);
 }
