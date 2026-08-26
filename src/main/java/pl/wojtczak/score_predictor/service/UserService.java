@@ -10,6 +10,8 @@ import pl.wojtczak.score_predictor.dto.response.UserStatsResponse;
 import pl.wojtczak.score_predictor.entity.User;
 import pl.wojtczak.score_predictor.enums.RegistrationStatus;
 import pl.wojtczak.score_predictor.exception.UserNotFoundException;
+import pl.wojtczak.score_predictor.repository.PredictionRepository;
+import pl.wojtczak.score_predictor.repository.UserAchievementRepository;
 import pl.wojtczak.score_predictor.repository.UserRepository;
 
 @Service
@@ -20,10 +22,19 @@ public class UserService {
 
     private final PredictionService predictionService;
 
-    public UserService(PasswordEncoder passwordEncoder, UserRepository userRepository, PredictionService predictionService) {
+    private final AchievementService achievementService;
+
+    private final UserAchievementRepository userAchievementRepository;
+
+    private final PredictionRepository predictionRepository;
+
+    public UserService(PasswordEncoder passwordEncoder, UserRepository userRepository, PredictionService predictionService, AchievementService achievementService, UserAchievementRepository userAchievementRepository, PredictionRepository predictionRepository) {
         this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
         this.predictionService = predictionService;
+        this.achievementService = achievementService;
+        this.userAchievementRepository = userAchievementRepository;
+        this.predictionRepository = predictionRepository;
     }
 
     public RegistrationStatus registerUser(RegisterRequest request) {
@@ -68,7 +79,18 @@ public class UserService {
 
     public UserResponse getCurrentUserProfile(){
         User currentUser = getCurrentUser();
-        return new UserResponse(currentUser.getUserId(), currentUser.getUsername(), currentUser.getEmail());
+        return
+                new UserResponse(
+                        currentUser.getUserId(),
+                        currentUser.getUsername(),
+                        currentUser.getEmail(),
+                        currentUser.getXp(),
+                        currentUser.getCoins(),
+                        currentUser.getLevel(),
+                        achievementService.getAllAchievements(currentUser),
+                        userAchievementRepository.countByUser(currentUser),
+                        predictionRepository.countByUserAndPointsAwarded(currentUser, 3),
+                        predictionRepository.countByUserAndPointsAwarded(currentUser, 1));
     }
 
     public UserStatsResponse getCurrentUserStats() {

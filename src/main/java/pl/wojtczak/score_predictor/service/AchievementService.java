@@ -1,15 +1,17 @@
 package pl.wojtczak.score_predictor.service;
 
 import org.springframework.stereotype.Service;
+import pl.wojtczak.score_predictor.dto.response.AchievementStatusResponse;
 import pl.wojtczak.score_predictor.entity.Achievement;
-import pl.wojtczak.score_predictor.entity.Match;
 import pl.wojtczak.score_predictor.entity.User;
 import pl.wojtczak.score_predictor.entity.UserAchievement;
 import pl.wojtczak.score_predictor.exception.AchievementNotFoundException;
-import pl.wojtczak.score_predictor.exception.MatchNotFoundException;
 import pl.wojtczak.score_predictor.repository.AchievementRepository;
 import pl.wojtczak.score_predictor.repository.PredictionRepository;
 import pl.wojtczak.score_predictor.repository.UserAchievementRepository;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class AchievementService {
@@ -70,4 +72,32 @@ public class AchievementService {
             awardAchievement(user, "EXACT_SCORE_200");
         }
     }
+
+    public List<AchievementStatusResponse> getAllAchievements(User user){
+
+        List<UserAchievement> userAchievements = userAchievementRepository.findByUser(user);
+
+        List<AchievementStatusResponse> result = new ArrayList<>();
+
+        for (Achievement achievement : achievementRepository.findAll()) {
+            UserAchievement userAchievement = null;
+            for (UserAchievement ua : userAchievements) {
+                if (ua.getAchievement().getCode().equals(achievement.getCode())) {
+                    userAchievement = ua;
+                    break;
+                }
+            }
+            result.add(new AchievementStatusResponse(
+                    achievement.getCode(),
+                    achievement.getName(),
+                    achievement.getCoinsReward(),
+                    userAchievement != null,
+                    userAchievement != null ? userAchievement.getUnlockedAt() : null
+            ));
+        }
+
+        return result;
+    }
+
+
 }

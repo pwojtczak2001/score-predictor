@@ -1,5 +1,7 @@
 package pl.wojtczak.score_predictor.dto.response;
 
+import java.util.List;
+
 public class UserResponse {
 
     private Integer userId;
@@ -8,10 +10,27 @@ public class UserResponse {
 
     private String email;
 
-    public UserResponse(Integer userId, String username, String email) {
+    private Integer xp;
+    private Integer coins;
+    private Integer level;
+
+    private List<AchievementStatusResponse> achievements;
+
+    private long achievementsUnlockedCount;
+    private long exactScoreCount;
+    private long correctResultCount;
+
+    public UserResponse(Integer userId, String username, String email, Integer xp, Integer coins, Integer level, List<AchievementStatusResponse> achievements, long achievementsUnlockedCount, long exactScoreCount, long correctResultCount) {
         this.userId = userId;
         this.username = username;
         this.email = email;
+        this.xp = xp;
+        this.coins = coins;
+        this.level = level;
+        this.achievements = achievements;
+        this.achievementsUnlockedCount = achievementsUnlockedCount;
+        this.exactScoreCount = exactScoreCount;
+        this.correctResultCount = correctResultCount;
     }
 
     public UserResponse() {
@@ -29,16 +48,32 @@ public class UserResponse {
         return email;
     }
 
-    public void setUserId(Integer userId) {
-        this.userId = userId;
+    public Integer getXp() {
+        return xp;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public Integer getCoins() {
+        return coins;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public Integer getLevel() {
+        return level;
+    }
+
+    public List<AchievementStatusResponse> getAchievements() {
+        return achievements;
+    }
+
+    public long getAchievementsUnlockedCount() {
+        return achievementsUnlockedCount;
+    }
+
+    public long getExactScoreCount() {
+        return exactScoreCount;
+    }
+
+    public long getCorrectResultCount() {
+        return correctResultCount;
     }
 
 }
