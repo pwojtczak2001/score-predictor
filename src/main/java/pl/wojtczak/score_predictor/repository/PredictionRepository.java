@@ -15,4 +15,6 @@ public interface PredictionRepository extends JpaRepository<Prediction, Integer>
     void deleteByMatch(Match match);
     long countByUserAndPointsAwarded(User user, Integer pointsAwarded);
     long countByUser(User user);
+
+    List<Prediction> findByUserAndMatch_Stage(User user, String stage);
 }

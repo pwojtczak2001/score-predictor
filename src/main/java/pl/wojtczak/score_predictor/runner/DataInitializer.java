@@ -36,15 +36,15 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
 
-        List<Team> teams = teamService.getAllTeams();
-        if (teams.isEmpty()) {
-            System.out.println("\nNo teams found in the database.");
-        } else {
-            System.out.println("\nTeams in the database:");
-        }
-        for (Team team : teams) {
-            System.out.println(team.getName());
-        }
+//        List<Team> teams = teamService.getAllTeams();
+//        if (teams.isEmpty()) {
+//            System.out.println("\nNo teams found in the database.");
+//        } else {
+//            System.out.println("\nTeams in the database:");
+//        }
+//        for (Team team : teams) {
+//            System.out.println(team.getName());
+//        }
 
         teamImportService.importTeams();
         matchImportService.importMatches();

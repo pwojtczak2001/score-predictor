@@ -29,12 +29,12 @@ public class PlayerProgressionService {
 
         awardXp(user, 1);
 
-        if (pointsAwarded == 1) {
+        if (pointsAwarded == 1 || pointsAwarded == 2) {
             awardXp(user, 1);
             awardCoins(user, 1);
         }
 
-        if (pointsAwarded == 3) {
+        if (pointsAwarded == 3 || pointsAwarded == 6) {
             awardXp(user, 3);
             awardCoins(user, 3);
         }

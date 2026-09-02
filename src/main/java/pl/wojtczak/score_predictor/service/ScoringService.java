@@ -1,11 +1,12 @@
 package pl.wojtczak.score_predictor.service;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 import pl.wojtczak.score_predictor.entity.LeagueMember;
 import pl.wojtczak.score_predictor.entity.Match;
 import pl.wojtczak.score_predictor.entity.Prediction;
 import pl.wojtczak.score_predictor.entity.User;
+import pl.wojtczak.score_predictor.repository.AbilityUsageRepository;
 import pl.wojtczak.score_predictor.repository.LeagueMemberRepository;
 import pl.wojtczak.score_predictor.repository.PredictionRepository;
 
@@ -25,12 +26,85 @@ public class ScoringService {
     private final PlayerProgressionService playerProgressionService;
     private final AchievementService achievementService;
 
+    private final AbilityUsageRepository abilityUsageRepository;
 
-    public ScoringService(PredictionRepository predictionRepository, LeagueMemberRepository leagueMemberRepository, PlayerProgressionService playerProgressionService, AchievementService achievementService) {
+    public ScoringService(PredictionRepository predictionRepository, LeagueMemberRepository leagueMemberRepository, PlayerProgressionService playerProgressionService, AchievementService achievementService, AbilityUsageRepository abilityUsageRepository) {
         this.predictionRepository = predictionRepository;
         this.leagueMemberRepository = leagueMemberRepository;
         this.playerProgressionService = playerProgressionService;
         this.achievementService = achievementService;
+        this.abilityUsageRepository = abilityUsageRepository;
+    }
+
+    private void awardHotStreakEntryReward(User user) {
+
+        playerProgressionService.awardXp(user, 5);
+        playerProgressionService.awardCoins(user, 5);
+    }
+
+    private int processHotStreak(
+            User user,
+            int normalAwardedPoints
+    ) {
+
+        boolean hasHotStreak = abilityUsageRepository
+                .existsByUserAndAbility_Code(
+                        user,
+                        "HOT_STREAK"
+                );
+
+        if (!hasHotStreak) {
+            return normalAwardedPoints;
+        }
+
+        if (normalAwardedPoints == 0) {
+
+            user.setExactScoreStreak(0);
+            user.setCorrectResultStreak(0);
+            user.setHotStreakActive(false);
+
+            return normalAwardedPoints;
+        }
+
+        boolean wasHotStreakActive = user.getHotStreakActive();
+
+        if (normalAwardedPoints == 3) {
+
+            user.setExactScoreStreak(
+                    user.getExactScoreStreak() + 1
+            );
+
+            user.setCorrectResultStreak(
+                    user.getCorrectResultStreak() + 1
+            );
+
+        } else if (normalAwardedPoints == 1) {
+
+            user.setExactScoreStreak(0);
+
+            user.setCorrectResultStreak(
+                    user.getCorrectResultStreak() + 1
+            );
+        }
+
+        boolean hotStreakReached =
+                user.getExactScoreStreak() >= 2
+                        || user.getCorrectResultStreak() >= 3;
+
+        if (!wasHotStreakActive && hotStreakReached) {
+
+            user.setHotStreakActive(true);
+
+            awardHotStreakEntryReward(user);
+
+            return normalAwardedPoints;
+        }
+
+        if (wasHotStreakActive) {
+            return normalAwardedPoints * 2;
+        }
+
+        return normalAwardedPoints;
     }
 
     private int calculatePoints(Match match, Prediction prediction) {
@@ -75,8 +149,18 @@ public class ScoringService {
 
         for (Prediction prediction : predictions) {
             if(prediction.getPointsAwarded() != null) continue;
-            int awardedPoints = calculatePoints(match, prediction);
-            playerProgressionService.processPredictionResult(prediction.getUser(), awardedPoints);
+            int normalAwardedPoints = calculatePoints(match, prediction);
+
+            int awardedPoints = processHotStreak(
+                    prediction.getUser(),
+                    normalAwardedPoints
+            );
+
+            playerProgressionService.processPredictionResult(
+                    prediction.getUser(),
+                    awardedPoints
+            );
+
             prediction.setPointsAwarded(awardedPoints);
 
             userLeagueMembersMap.get(prediction.getUser()).forEach(leagueMember -> {

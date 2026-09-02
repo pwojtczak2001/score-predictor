@@ -15,4 +15,8 @@ public interface MatchRepository extends JpaRepository<Match, Integer> {
 
     List<Match> findByStatusOrderByMatchDateAsc(String status);
 
+    Optional<Match> findFirstByStatusNotOrderByMatchDateAsc(String status);
+
+    boolean existsByStageAndStatus(String stage, String status);
+
 }

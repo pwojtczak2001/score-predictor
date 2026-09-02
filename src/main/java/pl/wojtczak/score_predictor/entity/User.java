@@ -38,6 +38,15 @@ public class User implements UserDetails{
     @Column(nullable = false)
     private Integer level = 1;
 
+    @Column(name = "exact_score_streak", nullable = false)
+    private Integer exactScoreStreak = 0;
+
+    @Column(name = "correct_result_streak", nullable = false)
+    private Integer correctResultStreak = 0;
+
+    @Column(name = "hot_streak_active", nullable = false)
+    private Boolean hotStreakActive = false;
+
     public User() {
     }
 
@@ -49,6 +58,9 @@ public class User implements UserDetails{
         this.xp = 0;
         this.coins = 0;
         this.level = 1;
+        this.exactScoreStreak = 0;
+        this.correctResultStreak = 0;
+        this.hotStreakActive = false;
     }
 
     public Integer getUserId() {
@@ -90,6 +102,18 @@ public class User implements UserDetails{
         return level;
     }
 
+    public Integer getExactScoreStreak() {
+        return exactScoreStreak;
+    }
+
+    public Integer getCorrectResultStreak() {
+        return correctResultStreak;
+    }
+
+    public Boolean getHotStreakActive() {
+        return hotStreakActive;
+    }
+
     public void setUsername(String username) {
         this.username = username;
     }
@@ -112,5 +136,17 @@ public class User implements UserDetails{
 
     public void setLevel(Integer level) {
         this.level = level;
+    }
+
+    public void setExactScoreStreak(Integer exactScoreStreak) {
+        this.exactScoreStreak = exactScoreStreak;
+    }
+
+    public void setCorrectResultStreak(Integer correctResultStreak) {
+        this.correctResultStreak = correctResultStreak;
+    }
+
+    public void setHotStreakActive(Boolean hotStreakActive) {
+        this.hotStreakActive = hotStreakActive;
     }
 }

@@ -1,6 +1,5 @@
 package pl.wojtczak.score_predictor.service;
 
-import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import pl.wojtczak.score_predictor.dto.response.UpcomingMatchResponse;
 import pl.wojtczak.score_predictor.entity.Match;
@@ -102,4 +101,16 @@ public class MatchService {
         predictionRepository.deleteByMatch(match);
         matchRepository.delete(match);
     }
+
+    public String getCurrentStage() {
+
+        Match currentMatch = matchRepository
+                .findFirstByStatusNotOrderByMatchDateAsc("FINISHED")
+                .orElseThrow(() ->
+                        new IllegalStateException("No active or upcoming stage found")
+                );
+
+        return currentMatch.getStage();
+    }
+
 }

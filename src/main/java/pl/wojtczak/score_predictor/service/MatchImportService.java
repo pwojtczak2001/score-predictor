@@ -1,6 +1,6 @@
 package pl.wojtczak.score_predictor.service;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 import pl.wojtczak.score_predictor.dto.imports.MatchImportDto;
 import pl.wojtczak.score_predictor.entity.Match;
@@ -9,10 +9,7 @@ import java.time.format.DateTimeFormatter;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class MatchImportService {
@@ -33,6 +30,17 @@ public class MatchImportService {
     @Transactional
     public void importMatches() throws IOException {
         List<MatchImportDto> matches = jsonFileService.loadMatches();
+
+        matches.sort(
+                Comparator.comparing(
+                        matchImportDto ->
+                                LocalDateTime.parse(
+                                        matchImportDto.getDate(),
+                                        formatter
+                                )
+                )
+        );
+
         Map<String, Match> existingMatchesMap = new HashMap<>();
         List<Team> teams = teamService.getAllTeams();
         Map<String, Team> teamsMap = new HashMap<>();
