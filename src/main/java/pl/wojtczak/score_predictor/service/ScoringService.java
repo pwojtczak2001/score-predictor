@@ -6,10 +6,12 @@ import pl.wojtczak.score_predictor.entity.LeagueMember;
 import pl.wojtczak.score_predictor.entity.Match;
 import pl.wojtczak.score_predictor.entity.Prediction;
 import pl.wojtczak.score_predictor.entity.User;
+import pl.wojtczak.score_predictor.logging.GameEventLogger;
 import pl.wojtczak.score_predictor.repository.AbilityUsageRepository;
 import pl.wojtczak.score_predictor.repository.LeagueMemberRepository;
 import pl.wojtczak.score_predictor.repository.PredictionRepository;
 
+import java.io.IOException;
 import java.util.*;
 
 @Service
@@ -28,18 +30,32 @@ public class ScoringService {
 
     private final AbilityUsageRepository abilityUsageRepository;
 
-    public ScoringService(PredictionRepository predictionRepository, LeagueMemberRepository leagueMemberRepository, PlayerProgressionService playerProgressionService, AchievementService achievementService, AbilityUsageRepository abilityUsageRepository) {
+    private final GameEventLogger gameEventLogger;
+
+    public ScoringService(PredictionRepository predictionRepository, LeagueMemberRepository leagueMemberRepository, PlayerProgressionService playerProgressionService, AchievementService achievementService, AbilityUsageRepository abilityUsageRepository, GameEventLogger gameEventLogger) {
         this.predictionRepository = predictionRepository;
         this.leagueMemberRepository = leagueMemberRepository;
         this.playerProgressionService = playerProgressionService;
         this.achievementService = achievementService;
         this.abilityUsageRepository = abilityUsageRepository;
+        this.gameEventLogger = gameEventLogger;
     }
 
     private void awardHotStreakEntryReward(User user) {
 
         playerProgressionService.awardXp(user, 5);
         playerProgressionService.awardCoins(user, 5);
+
+        try {
+            gameEventLogger.logXpAndCoinsAwarded(
+                    user,
+                    "HOT_STREAK_ENTRY",
+                    5,
+                    5
+            );
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private int processHotStreak(
@@ -92,6 +108,12 @@ public class ScoringService {
                         || user.getCorrectResultStreak() >= 3;
 
         if (!wasHotStreakActive && hotStreakReached) {
+
+            try {
+                gameEventLogger.logHotStreakEntered(user);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
             user.setHotStreakActive(true);
 
@@ -162,6 +184,12 @@ public class ScoringService {
             );
 
             prediction.setPointsAwarded(awardedPoints);
+
+            try {
+                gameEventLogger.logPointsAwarded(prediction.getUser(), match, awardedPoints);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
             userLeagueMembersMap.get(prediction.getUser()).forEach(leagueMember -> {
                 leagueMember.setCurrentPoints(leagueMember.getCurrentPoints() + awardedPoints);

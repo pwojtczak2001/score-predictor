@@ -6,10 +6,12 @@ import pl.wojtczak.score_predictor.entity.Achievement;
 import pl.wojtczak.score_predictor.entity.User;
 import pl.wojtczak.score_predictor.entity.UserAchievement;
 import pl.wojtczak.score_predictor.exception.AchievementNotFoundException;
+import pl.wojtczak.score_predictor.logging.GameEventLogger;
 import pl.wojtczak.score_predictor.repository.AchievementRepository;
 import pl.wojtczak.score_predictor.repository.PredictionRepository;
 import pl.wojtczak.score_predictor.repository.UserAchievementRepository;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,11 +23,14 @@ public class AchievementService {
     private final PredictionRepository predictionRepository;
     private final PlayerProgressionService playerProgressionService;
 
-    public AchievementService(AchievementRepository achievementRepository, UserAchievementRepository userAchievementRepository, PredictionRepository predictionRepository, PlayerProgressionService playerProgressionService) {
+    private final GameEventLogger gameEventLogger;
+
+    public AchievementService(AchievementRepository achievementRepository, UserAchievementRepository userAchievementRepository, PredictionRepository predictionRepository, PlayerProgressionService playerProgressionService, GameEventLogger gameEventLogger) {
         this.achievementRepository = achievementRepository;
         this.userAchievementRepository = userAchievementRepository;
         this.predictionRepository = predictionRepository;
         this.playerProgressionService = playerProgressionService;
+        this.gameEventLogger = gameEventLogger;
     }
 
     private void awardAchievement(User user, String code) {
@@ -42,6 +47,17 @@ public class AchievementService {
         userAchievementRepository.save(userAchievement);
 
         playerProgressionService.awardCoins(user, achievement.getCoinsReward());
+
+        try {
+            gameEventLogger.logXpAndCoinsAwarded(
+                    user,
+                    "ACHIEVEMENT_" + achievement.getCode(),
+                    0,
+                    achievement.getCoinsReward()
+            );
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void checkExactScoreAchievements(User user) {
