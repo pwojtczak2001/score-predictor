@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"match_id", "user_id"})})
+@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"match_id", "user_id", "league_id"})})
 public class Prediction {
 
     @Id
@@ -20,6 +20,10 @@ public class Prediction {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "user_id", nullable = false, updatable = false)
     private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "league_id", referencedColumnName = "league_id", nullable = false, updatable = false)
+    private League league;
 
     @Column(name = "predicted_home_score", nullable = false, length = 2, columnDefinition = "INT CHECK (predicted_home_score >= 0 AND predicted_home_score <= 99)")
     private Integer predictedHomeScore;
@@ -36,9 +40,10 @@ public class Prediction {
     public Prediction() {
     }
 
-    public Prediction(Match match, User user, Integer predictedHomeScore, Integer predictedAwayScore) {
+    public Prediction(Match match, User user, League league, Integer predictedHomeScore, Integer predictedAwayScore) {
         this.match = match;
         this.user = user;
+        this.league = league;
         this.predictedHomeScore = predictedHomeScore;
         this.predictedAwayScore = predictedAwayScore;
         this.createdAt = LocalDateTime.now();
@@ -54,6 +59,10 @@ public class Prediction {
 
     public User getUser() {
         return user;
+    }
+
+    public League getLeague() {
+        return league;
     }
 
     public Integer getPredictedHomeScore() {

@@ -17,10 +17,8 @@ public class UserResponse {
     private List<AchievementStatusResponse> achievements;
 
     private long achievementsUnlockedCount;
-    private long exactScoreCount;
-    private long correctResultCount;
 
-    public UserResponse(Integer userId, String username, String email, Integer xp, Integer coins, Integer level, List<AchievementStatusResponse> achievements, long achievementsUnlockedCount, long exactScoreCount, long correctResultCount) {
+    public UserResponse(Integer userId, String username, String email, Integer xp, Integer coins, Integer level, List<AchievementStatusResponse> achievements, long achievementsUnlockedCount) {
         this.userId = userId;
         this.username = username;
         this.email = email;
@@ -29,8 +27,6 @@ public class UserResponse {
         this.level = level;
         this.achievements = achievements;
         this.achievementsUnlockedCount = achievementsUnlockedCount;
-        this.exactScoreCount = exactScoreCount;
-        this.correctResultCount = correctResultCount;
     }
 
     public UserResponse() {
@@ -66,14 +62,6 @@ public class UserResponse {
 
     public long getAchievementsUnlockedCount() {
         return achievementsUnlockedCount;
-    }
-
-    public long getExactScoreCount() {
-        return exactScoreCount;
-    }
-
-    public long getCorrectResultCount() {
-        return correctResultCount;
     }
 
 }

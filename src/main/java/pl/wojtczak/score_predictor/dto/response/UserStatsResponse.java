@@ -7,19 +7,16 @@ public class UserStatsResponse {
     private Integer correctOutcomePredictionsCount;
     private Integer wrongPredictionsCount;
     private Double averagePointsPerPrediction;
-    private Double predictionEfficiencyPercentage;
-
     private Double correctPredictionsPercentage;
     private Integer finishedPredictionsCount;
     private Integer totalPoints;
 
-    public UserStatsResponse(Integer predictionsCount, Integer exactPredictionsCount, Integer correctOutcomePredictionsCount, Integer wrongPredictionsCount, Double averagePointsPerPrediction, Double predictionEfficiencyPercentage, Double correctPredictionsPercentage, Integer finishedPredictionsCount, Integer totalPoints) {
+    public UserStatsResponse(Integer predictionsCount, Integer exactPredictionsCount, Integer correctOutcomePredictionsCount, Integer wrongPredictionsCount, Double averagePointsPerPrediction, Double correctPredictionsPercentage, Integer finishedPredictionsCount, Integer totalPoints) {
         this.predictionsCount = predictionsCount;
         this.exactPredictionsCount = exactPredictionsCount;
         this.correctOutcomePredictionsCount = correctOutcomePredictionsCount;
         this.wrongPredictionsCount = wrongPredictionsCount;
         this.averagePointsPerPrediction = averagePointsPerPrediction;
-        this.predictionEfficiencyPercentage = predictionEfficiencyPercentage;
         this.correctPredictionsPercentage = correctPredictionsPercentage;
         this.finishedPredictionsCount = finishedPredictionsCount;
         this.totalPoints = totalPoints;
@@ -46,10 +43,6 @@ public class UserStatsResponse {
 
     public Double getAveragePointsPerPrediction() {
         return averagePointsPerPrediction;
-    }
-
-    public Double getPredictionEfficiencyPercentage() {
-        return predictionEfficiencyPercentage;
     }
 
     public Double getCorrectPredictionsPercentage() {

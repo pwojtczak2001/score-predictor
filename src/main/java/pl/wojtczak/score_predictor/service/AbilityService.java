@@ -3,9 +3,19 @@ package pl.wojtczak.score_predictor.service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 import pl.wojtczak.score_predictor.dto.request.AbilityActivationRequest;
+import pl.wojtczak.score_predictor.dto.request.SpyTargetRequest;
+import pl.wojtczak.score_predictor.dto.response.SpyPredictionResponse;
+import pl.wojtczak.score_predictor.dto.response.SpyTargetUserResponse;
 import pl.wojtczak.score_predictor.entity.*;
 import pl.wojtczak.score_predictor.enums.AbilityType;
+import pl.wojtczak.score_predictor.exception.AbilityNotFoundException;
+import pl.wojtczak.score_predictor.exception.LeagueNotFoundException;
+import pl.wojtczak.score_predictor.exception.PredictionNotFoundException;
+import pl.wojtczak.score_predictor.exception.UserNotMemberOfLeagueException;
 import pl.wojtczak.score_predictor.repository.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class AbilityService {
@@ -18,6 +28,7 @@ public class AbilityService {
     private final LeagueMemberRepository leagueMemberRepository;
     private final MatchRepository matchRepository;
     private final AbilityUsageRepository abilityUsageRepository;
+    private final PredictionRepository predictionRepository;
 
     private final UserRepository userRepository;
 
@@ -25,7 +36,7 @@ public class AbilityService {
                           MatchService matchService, AbilityRepository abilityRepository,
                           LeagueRepository leagueRepository,
                           LeagueMemberRepository leagueMemberRepository,
-                          MatchRepository matchRepository, AbilityUsageRepository abilityUsageRepository, UserRepository userRepository) {
+                          MatchRepository matchRepository, AbilityUsageRepository abilityUsageRepository, PredictionRepository predictionRepository, UserRepository userRepository) {
         this.userService = userService;
         this.matchService = matchService;
         this.abilityRepository = abilityRepository;
@@ -33,6 +44,7 @@ public class AbilityService {
         this.leagueMemberRepository = leagueMemberRepository;
         this.matchRepository = matchRepository;
         this.abilityUsageRepository = abilityUsageRepository;
+        this.predictionRepository = predictionRepository;
         this.userRepository = userRepository;
     }
 
@@ -69,9 +81,7 @@ public class AbilityService {
                 league,
                 user
         )) {
-            throw new IllegalArgumentException(
-                    "User is not a member of the league"
-            );
+            throw new UserNotMemberOfLeagueException(league.getLeagueId());
         }
     }
 
@@ -148,15 +158,221 @@ public class AbilityService {
         abilityUsageRepository.save(abilityUsage);
     }
 
+    public List<SpyTargetUserResponse> getSpyTargetUsers(Integer leagueId, String stage) {
+
+        User currentUser = userService.getCurrentUser();
+
+        if (!matchRepository.existsByStageAndStatus(
+                stage,
+                "NOT STARTED"
+        )) {
+            throw new IllegalArgumentException(
+                    "Selected stage is no longer active"
+            );
+        }
+
+        League league = leagueRepository.findById(leagueId)
+                .orElseThrow(() ->
+                        new LeagueNotFoundException(leagueId)
+                );
+
+        validateUserLeagueMembership(league, currentUser);
+
+        abilityUsageRepository.findByUserAndLeagueAndStageAndAbility_Code(
+                        currentUser,
+                        league,
+                        stage,
+                        "SPY"
+                )
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "SPY is not active for this stage"
+                        )
+                );
+
+        long totalMatches = matchRepository.countByStage(stage);
+
+        List<Object[]> results =
+                predictionRepository.findSpyTargetUsers(
+                        league,
+                        stage,
+                        currentUser
+                );
+
+        List<SpyTargetUserResponse> response = new ArrayList<>();
+
+        for (Object[] row : results) {
+
+            SpyTargetUserResponse user = new SpyTargetUserResponse(
+                    (Integer) row[0],
+                    (String) row[1],
+                    (Long) row[2],
+                    totalMatches
+            );
+
+            response.add(user);
+        }
+
+        return response;
+    }
+
+    @Transactional
+    public void selectSpyTarget(SpyTargetRequest request) {
+
+        User currentUser = userService.getCurrentUser();
+
+        if (!matchRepository.existsByStageAndStatus(
+                request.getStage(),
+                "NOT STARTED"
+        )) {
+            throw new IllegalArgumentException(
+                    "Selected stage is no longer active"
+            );
+        }
+
+        League league = leagueRepository.findById(request.getLeagueId())
+                .orElseThrow(() ->
+                        new LeagueNotFoundException(request.getLeagueId())
+                );
+
+        validateUserLeagueMembership(
+                league,
+                currentUser
+        );
+
+        AbilityUsage spyUsage =
+                abilityUsageRepository
+                        .findByUserAndLeagueAndStageAndAbility_Code(
+                                currentUser,
+                                league,
+                                request.getStage(),
+                                "SPY"
+                        )
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "SPY is not active for this stage"
+                                )
+                        );
+
+        if (spyUsage.getTargetUser() != null) {
+            throw new IllegalArgumentException(
+                    "SPY target has already been selected"
+            );
+        }
+
+        User targetUser = userRepository.findById(
+                request.getTargetUserId()
+        ).orElseThrow(() ->
+                new IllegalArgumentException(
+                        "Target user not found"
+                )
+        );
+
+        validateTargetUserLeagueMembership(
+                league,
+                targetUser
+        );
+
+        validateTargetUserIsNotCurrentUser(
+                currentUser,
+                targetUser
+        );
+
+        boolean hasPrediction =
+                predictionRepository.existsByUserAndLeagueAndMatch_Stage(
+                        targetUser,
+                        league,
+                        request.getStage()
+                );
+
+        if (!hasPrediction) {
+            throw new IllegalArgumentException(
+                    "Target user has no predictions in this stage"
+            );
+        }
+
+        spyUsage.setTargetUser(targetUser);
+
+        abilityUsageRepository.save(spyUsage);
+    }
+
+    public List<SpyPredictionResponse> getSpyPredictions(
+            Integer leagueId,
+            String stage
+    ) {
+        User currentUser = userService.getCurrentUser();
+
+        if (!matchRepository.existsByStageAndStatus(
+                stage,
+                "NOT STARTED"
+        )) {
+            throw new IllegalArgumentException(
+                    "Selected stage is no longer active"
+            );
+        }
+
+        League league = leagueRepository.findById(leagueId)
+                .orElseThrow(() ->
+                        new LeagueNotFoundException(leagueId)
+                );
+
+        validateUserLeagueMembership(
+                league,
+                currentUser
+        );
+
+        AbilityUsage spyUsage =
+                abilityUsageRepository
+                        .findByUserAndLeagueAndStageAndAbility_Code(
+                                currentUser,
+                                league,
+                                stage,
+                                "SPY"
+                        )
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "SPY is not active for this stage"
+                                )
+                        );
+
+        if (spyUsage.getTargetUser() == null) {
+            throw new IllegalArgumentException(
+                    "SPY target has not been selected"
+            );
+        }
+
+        User targetUser = spyUsage.getTargetUser();
+
+        List<Prediction> predictions =
+                predictionRepository
+                        .findByUserAndLeagueAndMatch_Stage(
+                                targetUser,
+                                league,
+                                stage
+                        );
+
+        return predictions.stream()
+                .map(prediction -> new SpyPredictionResponse(
+                        prediction.getMatch().getExternalMatchId(),
+                        prediction.getMatch().getHomeTeam().getName(),
+                        prediction.getMatch().getAwayTeam().getName(),
+                        prediction.getMatch().getStage(),
+                        prediction.getMatch().getHomeTeam().getLogoUrl(),
+                        prediction.getMatch().getAwayTeam().getLogoUrl(),
+                        prediction.getMatch().getMatchDate(),
+                        prediction.getPredictedHomeScore(),
+                        prediction.getPredictedAwayScore()
+                ))
+                .toList();
+    }
+
     @Transactional
     public void activateAbility(AbilityActivationRequest request){
 
         User currentUser = userService.getCurrentUser();
 
         Ability ability = abilityRepository.findByCode(request.getAbilityCode())
-                .orElseThrow(() -> new IllegalArgumentException(
-                                "Ability not found: " + request.getAbilityCode()
-                        )
+                .orElseThrow(() -> new AbilityNotFoundException(request.getAbilityCode())
                 );
 
         validateUserLevel(currentUser, ability);
@@ -195,7 +411,7 @@ public class AbilityService {
         }
 
         League league = leagueRepository.findById(request.getLeagueId())
-                .orElseThrow(() -> new IllegalArgumentException("League not found"));
+                .orElseThrow(() -> new LeagueNotFoundException(request.getLeagueId()));
 
         validateUserLeagueMembership(league, currentUser);
 
@@ -219,26 +435,11 @@ public class AbilityService {
                     );
                 }
 
-                if (request.getTargetUserId() == null) {
+                if (request.getTargetUserId() != null) {
                     throw new IllegalArgumentException(
-                            "Target user is required for Spy"
+                            "Target user is not allowed when activating Spy"
                     );
                 }
-
-                targetUser = userRepository
-                        .findById(request.getTargetUserId())
-                        .orElseThrow(() ->
-                                new IllegalArgumentException("Target user not found")
-                        );
-
-                validateTargetUserLeagueMembership(
-                        league,
-                        targetUser);
-
-                validateTargetUserIsNotCurrentUser(
-                        currentUser,
-                        targetUser
-                );
 
                 break;
 
@@ -294,6 +495,25 @@ public class AbilityService {
                 if (!targetMatch.getStatus().equals("NOT STARTED")) {
                     throw new IllegalArgumentException(
                             "Target match is no longer available"
+                    );
+                }
+
+                if ("LOCK".equals(ability.getCode()) && !predictionRepository.existsByMatchAndUserAndLeague(targetMatch, targetUser, league)) {
+                    throw new PredictionNotFoundException(targetMatch.getMatchId(), targetUser.getUsername(), league.getLeagueId());
+                }
+
+                boolean alreadyLockedByAnotherUser =
+                        abilityUsageRepository
+                                .existsByTargetUserAndTargetMatchAndLeagueAndAbility_Code(
+                                        targetUser,
+                                        targetMatch,
+                                        league,
+                                        "LOCK"
+                                );
+
+                if (alreadyLockedByAnotherUser) {
+                    throw new IllegalArgumentException(
+                            "This prediction is already locked"
                     );
                 }
 

@@ -19,4 +19,6 @@ public interface MatchRepository extends JpaRepository<Match, Integer> {
 
     boolean existsByStageAndStatus(String stage, String status);
 
+    long countByStage(String stage);
+
 }

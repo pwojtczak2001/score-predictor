@@ -3,6 +3,7 @@ package pl.wojtczak.score_predictor.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import pl.wojtczak.score_predictor.dto.response.UpcomingMatchResponse;
@@ -26,10 +27,12 @@ public class MatchController {
         this.userService = userService;
     }
 
-    @GetMapping("/upcoming")
-    public ResponseEntity<List<UpcomingMatchResponse>> getUpcomingMatches() {
+    @GetMapping("/upcoming/{leagueId}")
+    public ResponseEntity<List<UpcomingMatchResponse>> getUpcomingMatches(@PathVariable Integer leagueId) {
+
         User currentUser = userService.getCurrentUser();
-        return ResponseEntity.ok(matchService.getUpcomingMatches(currentUser));
+
+        return ResponseEntity.ok(matchService.getUpcomingMatches(currentUser, leagueId));
     }
 
 }

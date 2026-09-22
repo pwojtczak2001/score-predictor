@@ -2,11 +2,16 @@ package pl.wojtczak.score_predictor.service;
 
 import org.springframework.stereotype.Service;
 import pl.wojtczak.score_predictor.dto.response.UpcomingMatchResponse;
+import pl.wojtczak.score_predictor.entity.League;
 import pl.wojtczak.score_predictor.entity.Match;
 import pl.wojtczak.score_predictor.entity.Prediction;
 import pl.wojtczak.score_predictor.entity.User;
+import pl.wojtczak.score_predictor.exception.LeagueNotFoundException;
 import pl.wojtczak.score_predictor.exception.MatchAlreadyExistsException;
 import pl.wojtczak.score_predictor.exception.MatchNotFoundException;
+import pl.wojtczak.score_predictor.exception.UserNotMemberOfLeagueException;
+import pl.wojtczak.score_predictor.repository.LeagueMemberRepository;
+import pl.wojtczak.score_predictor.repository.LeagueRepository;
 import pl.wojtczak.score_predictor.repository.MatchRepository;
 import pl.wojtczak.score_predictor.repository.PredictionRepository;
 
@@ -21,10 +26,16 @@ public class MatchService {
     private final ScoringService scoringService;
     private final PredictionRepository predictionRepository;
 
-    public MatchService(MatchRepository matchRepository, ScoringService scoringService, PredictionRepository predictionRepository) {
+    private final LeagueRepository leagueRepository;
+
+    private final LeagueMemberRepository leagueMemberRepository;
+
+    public MatchService(MatchRepository matchRepository, ScoringService scoringService, PredictionRepository predictionRepository, LeagueRepository leagueRepository, LeagueMemberRepository leagueMemberRepository) {
         this.matchRepository = matchRepository;
         this.scoringService = scoringService;
         this.predictionRepository = predictionRepository;
+        this.leagueRepository = leagueRepository;
+        this.leagueMemberRepository = leagueMemberRepository;
     }
 
 
@@ -76,11 +87,20 @@ public class MatchService {
         }
     }
 
-    public List<UpcomingMatchResponse> getUpcomingMatches(User currentUser){
+    public List<UpcomingMatchResponse> getUpcomingMatches(User currentUser, Integer leagueId){
+
+        League league = leagueRepository.findById(leagueId)
+                .orElseThrow(() -> new LeagueNotFoundException(leagueId)
+                );
+
+        if (!leagueMemberRepository.existsByLeagueAndUser(league, currentUser)) {
+            throw new UserNotMemberOfLeagueException(leagueId);
+        }
+
         List<UpcomingMatchResponse> upcomingMatchesResponse = new ArrayList<>();
         List<Match> upcomingMatches = matchRepository.findByStatusOrderByMatchDateAsc("NOT STARTED");
         for (Match match : upcomingMatches) {
-            Optional<Prediction> prediction = predictionRepository.findByMatchAndUser(match, currentUser);
+            Optional<Prediction> prediction = predictionRepository.findByMatchAndUserAndLeague(match, currentUser, league);
             upcomingMatchesResponse.add(new UpcomingMatchResponse(
                     match.getExternalMatchId(),
                     match.getHomeTeam().getName(),

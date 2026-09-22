@@ -17,7 +17,7 @@ public class GameEventLogger {
         String awayTeam = match.getAwayTeam().getDisplayName();
 
         String message = String.format(
-                "%s | POINTS_AWARDED | user=%s | match=%s vs %s | points=%d",
+                "%s | user=%s | match=%s vs %s | points=%d",
                 LocalDateTime.now(),
                 user.getUsername(),
                 homeTeam,
@@ -45,7 +45,7 @@ public class GameEventLogger {
     public void logXpAndCoinsAwarded(User user, String source, int xp, int coins) throws IOException {
 
         String message = String.format(
-                "%s | REWARD_AWARDED | user=%s | source=%s | xp=%d | coins=%d",
+                "%s | user=%s | source=%s | xp=%d | coins=%d",
                 LocalDateTime.now(),
                 user.getUsername(),
                 source,

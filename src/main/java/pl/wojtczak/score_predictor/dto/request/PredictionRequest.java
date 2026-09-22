@@ -5,14 +5,16 @@ public class PredictionRequest {
     private String externalMatchId;
     private Integer predictedHomeScore;
     private Integer predictedAwayScore;
+    private Integer leagueId;
 
     public PredictionRequest() {
     }
 
-    public PredictionRequest(String externalMatchId, Integer predictedHomeScore, Integer predictedAwayScore) {
+    public PredictionRequest(String externalMatchId, Integer predictedHomeScore, Integer predictedAwayScore, Integer leagueId) {
         this.externalMatchId = externalMatchId;
         this.predictedHomeScore = predictedHomeScore;
         this.predictedAwayScore = predictedAwayScore;
+        this.leagueId = leagueId;
     }
 
 
@@ -38,6 +40,14 @@ public class PredictionRequest {
 
     public void setPredictedAwayScore(Integer predictedAwayScore) {
         this.predictedAwayScore = predictedAwayScore;
+    }
+
+    public Integer getLeagueId() {
+        return leagueId;
+    }
+
+    public void setLeagueId(Integer leagueId) {
+        this.leagueId = leagueId;
     }
 
 }

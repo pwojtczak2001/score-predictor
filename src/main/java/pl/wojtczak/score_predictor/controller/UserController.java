@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import pl.wojtczak.score_predictor.dto.response.UserResponse;
 import pl.wojtczak.score_predictor.dto.response.UserStatsResponse;
@@ -26,7 +27,7 @@ public class UserController {
     }
 
     @GetMapping("/stats")
-    public ResponseEntity<UserStatsResponse> getCurrentUserStats() {
-        return ResponseEntity.ok(userService.getCurrentUserStats());
+    public ResponseEntity<UserStatsResponse> getCurrentUserStats(@RequestParam Integer leagueId) {
+        return ResponseEntity.ok(userService.getCurrentUserStats(leagueId));
     }
 }

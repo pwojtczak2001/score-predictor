@@ -58,10 +58,7 @@ public class ScoringService {
         }
     }
 
-    private int processHotStreak(
-            User user,
-            int normalAwardedPoints
-    ) {
+    private int processHotStreak(User user, int normalAwardedPoints) {
 
         boolean hasHotStreak = abilityUsageRepository
                 .existsByUserAndAbility_Code(

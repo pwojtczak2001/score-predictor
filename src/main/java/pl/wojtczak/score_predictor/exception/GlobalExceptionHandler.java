@@ -33,7 +33,9 @@ public class GlobalExceptionHandler {
             UserNotFoundException.class,
             LeagueNotFoundException.class,
             TeamNotFoundException.class,
-            AchievementNotFoundException.class
+            AchievementNotFoundException.class,
+            PredictionNotFoundException.class,
+            AbilityNotFoundException.class
     })
     public ResponseEntity<ErrorResponse> handleNotFoundExceptions(RuntimeException ex) {
         return buildErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage());
@@ -50,6 +52,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ErrorResponse> handleBadCredentialsException(BadCredentialsException ex) {
         return buildErrorResponse(HttpStatus.UNAUTHORIZED, "Invalid username or password.");
+    }
+
+    @ExceptionHandler(UserNotMemberOfLeagueException.class)
+    public ResponseEntity<ErrorResponse> handleUserNotMemberOfLeagueException(
+            UserNotMemberOfLeagueException ex) {
+
+        return buildErrorResponse(HttpStatus.FORBIDDEN, ex.getMessage());
     }
 
 }

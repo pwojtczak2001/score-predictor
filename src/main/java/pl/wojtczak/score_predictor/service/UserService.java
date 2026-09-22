@@ -7,12 +7,13 @@ import org.springframework.stereotype.Service;
 import pl.wojtczak.score_predictor.dto.auth.RegisterRequest;
 import pl.wojtczak.score_predictor.dto.response.UserResponse;
 import pl.wojtczak.score_predictor.dto.response.UserStatsResponse;
+import pl.wojtczak.score_predictor.entity.League;
 import pl.wojtczak.score_predictor.entity.User;
 import pl.wojtczak.score_predictor.enums.RegistrationStatus;
+import pl.wojtczak.score_predictor.exception.LeagueNotFoundException;
 import pl.wojtczak.score_predictor.exception.UserNotFoundException;
-import pl.wojtczak.score_predictor.repository.PredictionRepository;
-import pl.wojtczak.score_predictor.repository.UserAchievementRepository;
-import pl.wojtczak.score_predictor.repository.UserRepository;
+import pl.wojtczak.score_predictor.exception.UserNotMemberOfLeagueException;
+import pl.wojtczak.score_predictor.repository.*;
 
 @Service
 public class UserService {
@@ -28,13 +29,19 @@ public class UserService {
 
     private final PredictionRepository predictionRepository;
 
-    public UserService(PasswordEncoder passwordEncoder, UserRepository userRepository, PredictionService predictionService, AchievementService achievementService, UserAchievementRepository userAchievementRepository, PredictionRepository predictionRepository) {
+    private final LeagueMemberRepository leagueMemberRepository;
+
+    private final LeagueRepository leagueRepository;
+
+    public UserService(PasswordEncoder passwordEncoder, UserRepository userRepository, PredictionService predictionService, AchievementService achievementService, UserAchievementRepository userAchievementRepository, PredictionRepository predictionRepository, LeagueMemberRepository leagueMemberRepository, LeagueRepository leagueRepository) {
         this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
         this.predictionService = predictionService;
         this.achievementService = achievementService;
         this.userAchievementRepository = userAchievementRepository;
         this.predictionRepository = predictionRepository;
+        this.leagueMemberRepository = leagueMemberRepository;
+        this.leagueRepository = leagueRepository;
     }
 
     public RegistrationStatus registerUser(RegisterRequest request) {
@@ -88,14 +95,20 @@ public class UserService {
                         currentUser.getCoins(),
                         currentUser.getLevel(),
                         achievementService.getAllAchievements(currentUser),
-                        userAchievementRepository.countByUser(currentUser),
-                        predictionRepository.countByUserAndPointsAwarded(currentUser, 3),
-                        predictionRepository.countByUserAndPointsAwarded(currentUser, 1));
+                        userAchievementRepository.countByUser(currentUser));
     }
 
-    public UserStatsResponse getCurrentUserStats() {
+    public UserStatsResponse getCurrentUserStats(Integer leagueId) {
         User currentUser = getCurrentUser();
-        return predictionService.getUserStats(currentUser);
+
+        League league = leagueRepository.findById(leagueId)
+                .orElseThrow(() -> new LeagueNotFoundException(leagueId));
+
+        if (!leagueMemberRepository.existsByLeagueAndUser(league, currentUser)) {
+            throw new UserNotMemberOfLeagueException(leagueId);
+        }
+
+        return predictionService.getUserStats(currentUser, league);
     }
 
 }
