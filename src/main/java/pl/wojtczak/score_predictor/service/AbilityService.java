@@ -16,6 +16,7 @@ import pl.wojtczak.score_predictor.repository.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class AbilityService {
@@ -502,19 +503,35 @@ public class AbilityService {
                     throw new PredictionNotFoundException(targetMatch.getMatchId(), targetUser.getUsername(), league.getLeagueId());
                 }
 
-                boolean alreadyLockedByAnotherUser =
-                        abilityUsageRepository
-                                .existsByTargetUserAndTargetMatchAndLeagueAndAbility_Code(
-                                        targetUser,
-                                        targetMatch,
-                                        league,
-                                        "LOCK"
-                                );
+                if ("LOCK".equals(ability.getCode())) {
 
-                if (alreadyLockedByAnotherUser) {
-                    throw new IllegalArgumentException(
-                            "This prediction is already locked"
-                    );
+                    boolean alreadyLockedByAnotherUser =
+                            abilityUsageRepository
+                                    .existsByTargetUserAndTargetMatchAndLeagueAndAbility_Code(
+                                            targetUser,
+                                            targetMatch,
+                                            league,
+                                            "LOCK"
+                                    );
+
+                    if (alreadyLockedByAnotherUser) {
+                        throw new IllegalArgumentException(
+                                "This prediction is already locked"
+                        );
+                    }
+                }
+
+
+                if ("BOMB".equals(ability.getCode())) {
+
+                    Optional<Prediction> prediction =
+                            predictionRepository.findByMatchAndUserAndLeague(
+                                    targetMatch,
+                                    targetUser,
+                                    league
+                            );
+
+                    prediction.ifPresent(predictionRepository::delete);
                 }
 
                 break;

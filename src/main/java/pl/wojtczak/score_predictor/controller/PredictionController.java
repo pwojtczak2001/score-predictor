@@ -44,9 +44,11 @@ public class PredictionController {
             case SUCCESS ->
                     ResponseEntity.status(HttpStatus.CREATED).body(status);
 
-            case PREDICTION_ALREADY_EXISTS,
-                    MATCH_ALREADY_STARTED ->
+            case PREDICTION_ALREADY_EXISTS, MATCH_ALREADY_STARTED ->
                     ResponseEntity.status(HttpStatus.CONFLICT).body(status);
+
+            case PREDICTION_BOMBED ->
+                    ResponseEntity.status(HttpStatus.FORBIDDEN).body(status);
 
             default ->
                     throw new IllegalStateException("Unexpected prediction status: " + status);
@@ -69,6 +71,9 @@ public class PredictionController {
 
             case PREDICTION_NOT_FOUND ->
                     ResponseEntity.status(HttpStatus.NOT_FOUND).body(status);
+
+            case PREDICTION_LOCKED ->
+                    ResponseEntity.status(HttpStatus.FORBIDDEN).body(status);
 
             default ->
                     throw new IllegalStateException("Unexpected prediction status: " + status);

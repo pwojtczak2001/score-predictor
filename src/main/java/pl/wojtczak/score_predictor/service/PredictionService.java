@@ -48,6 +48,16 @@ public class PredictionService {
             return PredictionOperationStatus.PREDICTION_ALREADY_EXISTS;
         }
 
+        if (abilityUsageRepository
+                .existsByTargetUserAndTargetMatchAndLeagueAndAbility_Code(
+                        user,
+                        match,
+                        league,
+                        "BOMB"
+                )) {
+            return PredictionOperationStatus.PREDICTION_BOMBED;
+        }
+
         Prediction prediction = new Prediction(match, user, league, homeScore, awayScore);
         predictionRepository.save(prediction);
 

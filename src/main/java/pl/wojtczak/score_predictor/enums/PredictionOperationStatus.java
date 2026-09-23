@@ -6,6 +6,6 @@ public enum PredictionOperationStatus {
     PREDICTION_NOT_FOUND,
     MATCH_ALREADY_STARTED,
     SUCCESS,
-
+    PREDICTION_BOMBED,
     PREDICTION_LOCKED
 }
