@@ -18,6 +18,8 @@ public interface AbilityUsageRepository extends JpaRepository<AbilityUsage, Inte
 
     List<AbilityUsage> findByUser(User user);
 
+    boolean existsByUserAndLeagueAndStageAndTargetMatchAndAbility_Code(User user, League league, String stage, Match targetMatch, String abilityCode);
+
     Optional<AbilityUsage> findByUserAndLeagueAndStageAndAbility_Code(User user, League league, String stage, String abilityCode);
     Optional<AbilityUsage> findByTargetMatchAndLeagueAndAbility_Code(Match targetMatch, League league, String abilityCode);
     boolean existsByUserAndAbility_Code(User user, String code);

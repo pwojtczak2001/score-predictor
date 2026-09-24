@@ -180,6 +180,24 @@ public class ScoringService {
         return normalAwardedPoints;
     }
 
+    private int applyDoublePoints(Prediction prediction, int awardedPoints) {
+
+        boolean hasDoublePoints = abilityUsageRepository
+                .existsByUserAndLeagueAndStageAndTargetMatchAndAbility_Code(
+                        prediction.getUser(),
+                        prediction.getLeague(),
+                        prediction.getMatch().getStage(),
+                        prediction.getMatch(),
+                        "DOUBLE_POINTS"
+                );
+
+        if (hasDoublePoints) {
+            return awardedPoints * 2;
+        }
+
+        return awardedPoints;
+    }
+
     @Transactional
     public void calculateAndAwardPoints(Match match){
 
@@ -209,6 +227,8 @@ public class ScoringService {
             int normalAwardedPoints = getBasePoints(predictionResult);
 
             normalAwardedPoints = applyJoker(prediction, predictionResult, normalAwardedPoints);
+
+            normalAwardedPoints = applyDoublePoints(prediction, normalAwardedPoints);
 
             int awardedPoints = processHotStreak(
                     prediction.getUser(),
