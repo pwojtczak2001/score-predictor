@@ -153,8 +153,8 @@ public class AbilityService {
                 null,
                 null,
                 null,
-                null
-        );
+                null,
+                null);
 
         abilityUsageRepository.save(abilityUsage);
     }
@@ -418,6 +418,7 @@ public class AbilityService {
 
         Match targetMatch = null;
         User targetUser = null;
+        Boolean consumed = null;
 
         switch (ability.getCode()) {
 
@@ -499,6 +500,7 @@ public class AbilityService {
                     );
                 }
 
+
                 if ("LOCK".equals(ability.getCode()) && !predictionRepository.existsByMatchAndUserAndLeague(targetMatch, targetUser, league)) {
                     throw new PredictionNotFoundException(targetMatch.getMatchId(), targetUser.getUsername(), league.getLeagueId());
                 }
@@ -521,6 +523,21 @@ public class AbilityService {
                     }
                 }
 
+                Optional<AbilityUsage> shieldUsage =
+                        abilityUsageRepository
+                                .findByUserAndLeagueAndStageAndConsumedAndAbility_Code(
+                                        targetUser,
+                                        league,
+                                        selectedStage,
+                                        false,
+                                        "SHIELD"
+                                );
+
+                if (shieldUsage.isPresent()) {
+                    shieldUsage.get().setConsumed(true);
+                    abilityUsageRepository.save(shieldUsage.get());
+                    break;
+                }
 
                 if ("BOMB".equals(ability.getCode())) {
 
@@ -595,6 +612,8 @@ public class AbilityService {
                     );
                 }
 
+                consumed = false;
+
                 break;
 
             case "JOKER":
@@ -628,8 +647,8 @@ public class AbilityService {
                 league,
                 selectedStage,
                 targetMatch,
-                targetUser
-        );
+                targetUser,
+                consumed);
 
         abilityUsageRepository.save(usage);
         currentUser.setCoins(

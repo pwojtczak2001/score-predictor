@@ -20,6 +20,11 @@ public class ScoringService {
     private static final int EXACT_SCORE_POINTS = 3;
     private static final int CORRECT_RESULT_POINTS = 1;
     private static final int INCORRECT_RESULT_POINTS = 0;
+    private enum PredictionResult {
+        EXACT,
+        CORRECT_RESULT,
+        INCORRECT
+    }
 
     private final PredictionRepository predictionRepository;
 
@@ -58,7 +63,7 @@ public class ScoringService {
         }
     }
 
-    private int processHotStreak(User user, int normalAwardedPoints) {
+    private int processHotStreak(User user, PredictionResult predictionResult, int normalAwardedPoints) {
 
         boolean hasHotStreak = abilityUsageRepository
                 .existsByUserAndAbility_Code(
@@ -70,7 +75,7 @@ public class ScoringService {
             return normalAwardedPoints;
         }
 
-        if (normalAwardedPoints == 0) {
+        if (predictionResult == PredictionResult.INCORRECT) {
 
             user.setExactScoreStreak(0);
             user.setCorrectResultStreak(0);
@@ -81,7 +86,7 @@ public class ScoringService {
 
         boolean wasHotStreakActive = user.getHotStreakActive();
 
-        if (normalAwardedPoints == 3) {
+        if (predictionResult == PredictionResult.EXACT) {
 
             user.setExactScoreStreak(
                     user.getExactScoreStreak() + 1
@@ -91,7 +96,7 @@ public class ScoringService {
                     user.getCorrectResultStreak() + 1
             );
 
-        } else if (normalAwardedPoints == 1) {
+        } else if (predictionResult == PredictionResult.CORRECT_RESULT) {
 
             user.setExactScoreStreak(0);
 
@@ -126,23 +131,53 @@ public class ScoringService {
         return normalAwardedPoints;
     }
 
-    private int calculatePoints(Match match, Prediction prediction) {
+    private PredictionResult calculateResult(Match match, Prediction prediction) {
         int actualHomeScore = match.getHomeScore();
         int actualAwayScore = match.getAwayScore();
         int predictedHomeScore = prediction.getPredictedHomeScore();
         int predictedAwayScore = prediction.getPredictedAwayScore();
 
         if (actualHomeScore == predictedHomeScore && actualAwayScore == predictedAwayScore) {
-            return EXACT_SCORE_POINTS;
+            return PredictionResult.EXACT;
         } else if ((actualHomeScore > actualAwayScore && predictedHomeScore > predictedAwayScore)
                     ||
                    (actualHomeScore < actualAwayScore && predictedHomeScore < predictedAwayScore)
                     ||
                    (actualHomeScore == actualAwayScore && predictedHomeScore == predictedAwayScore)) {
-            return CORRECT_RESULT_POINTS;
+            return PredictionResult.CORRECT_RESULT;
         } else {
-            return INCORRECT_RESULT_POINTS;
+            return PredictionResult.INCORRECT;
         }
+    }
+
+    private int getBasePoints(PredictionResult predictionResult) {
+
+        if (predictionResult == PredictionResult.EXACT) {
+            return EXACT_SCORE_POINTS;
+        }
+
+        if (predictionResult == PredictionResult.CORRECT_RESULT) {
+            return CORRECT_RESULT_POINTS;
+        }
+
+        return INCORRECT_RESULT_POINTS;
+    }
+
+    private int applyJoker(Prediction prediction, PredictionResult predictionResult, int normalAwardedPoints) {
+
+        boolean hasJoker = abilityUsageRepository
+                .existsByUserAndLeagueAndStageAndAbility_Code(
+                        prediction.getUser(),
+                        prediction.getLeague(),
+                        prediction.getMatch().getStage(),
+                        "JOKER"
+                );
+
+        if (hasJoker && predictionResult == PredictionResult.EXACT) {
+            return normalAwardedPoints * 2;
+        }
+
+        return normalAwardedPoints;
     }
 
     @Transactional
@@ -168,10 +203,16 @@ public class ScoringService {
 
         for (Prediction prediction : predictions) {
             if(prediction.getPointsAwarded() != null) continue;
-            int normalAwardedPoints = calculatePoints(match, prediction);
+
+            PredictionResult predictionResult = calculateResult(match, prediction);
+
+            int normalAwardedPoints = getBasePoints(predictionResult);
+
+            normalAwardedPoints = applyJoker(prediction, predictionResult, normalAwardedPoints);
 
             int awardedPoints = processHotStreak(
                     prediction.getUser(),
+                    predictionResult,
                     normalAwardedPoints
             );
 

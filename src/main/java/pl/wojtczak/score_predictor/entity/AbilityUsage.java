@@ -39,16 +39,20 @@ public class AbilityUsage {
     @Column(name = "activated_at", nullable = false, updatable = false)
     private LocalDateTime activatedAt;
 
+    @Column(name = "consumed")
+    private Boolean consumed;
+
     public AbilityUsage() {
     }
 
-    public AbilityUsage(User user, Ability ability, League league, String stage, Match targetMatch, User targetUser) {
+    public AbilityUsage(User user, Ability ability, League league, String stage, Match targetMatch, User targetUser, Boolean consumed) {
         this.user = user;
         this.ability = ability;
         this.league = league;
         this.stage = stage;
         this.targetMatch = targetMatch;
         this.targetUser = targetUser;
+        this.consumed = consumed;
         this.activatedAt = LocalDateTime.now();
     }
 
@@ -84,6 +88,10 @@ public class AbilityUsage {
         return activatedAt;
     }
 
+    public Boolean getConsumed() {
+        return consumed;
+    }
+
     public void setUser(User user) {
         this.user = user;
     }
@@ -106,6 +114,9 @@ public class AbilityUsage {
 
     public void setTargetUser(User targetUser) {
         this.targetUser = targetUser;
+    }
+    public void setConsumed(Boolean consumed) {
+        this.consumed = consumed;
     }
 
 }
