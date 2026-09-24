@@ -10,6 +10,7 @@ import java.util.Optional;
 public interface PredictionRepository extends JpaRepository<Prediction, Integer> {
 
     List<Prediction> findByMatch(Match match);
+    List<Prediction> findByMatchAndLeague(Match match, League league);
 
     List<Prediction> findByUser(User user);
 

@@ -2,10 +2,7 @@ package pl.wojtczak.score_predictor.service;
 
 import org.springframework.stereotype.Service;
 import pl.wojtczak.score_predictor.dto.response.UserStatsResponse;
-import pl.wojtczak.score_predictor.entity.League;
-import pl.wojtczak.score_predictor.entity.Match;
-import pl.wojtczak.score_predictor.entity.Prediction;
-import pl.wojtczak.score_predictor.entity.User;
+import pl.wojtczak.score_predictor.entity.*;
 import pl.wojtczak.score_predictor.enums.PredictionOperationStatus;
 import pl.wojtczak.score_predictor.exception.UserNotMemberOfLeagueException;
 import pl.wojtczak.score_predictor.repository.AbilityUsageRepository;
@@ -55,7 +52,20 @@ public class PredictionService {
                         league,
                         "BOMB"
                 )) {
-            return PredictionOperationStatus.PREDICTION_BOMBED;
+            return PredictionOperationStatus.PREDICTION_BLOCKED_BY_BOMBED;
+        }
+
+        Optional<AbilityUsage> kingsOrderUsage =
+                abilityUsageRepository.findByTargetMatchAndLeagueAndAbility_Code(
+                        match,
+                        league,
+                        "KINGS_ORDER"
+                );
+
+        if (kingsOrderUsage.isPresent()
+                && !kingsOrderUsage.get().getUser().getUserId().equals(user.getUserId())) {
+
+            return PredictionOperationStatus.PREDICTION_BLOCKED_BY_KINGS_ORDER;
         }
 
         Prediction prediction = new Prediction(match, user, league, homeScore, awayScore);

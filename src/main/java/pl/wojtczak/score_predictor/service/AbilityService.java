@@ -593,6 +593,34 @@ public class AbilityService {
                     );
                 }
 
+                if ("KINGS_ORDER".equals(ability.getCode())) {
+                    List<Prediction> predictions = predictionRepository.findByMatchAndLeague(targetMatch, league);
+                    for (Prediction prediction : predictions) {
+
+                        if (prediction.getUser().getUserId()
+                                .equals(currentUser.getUserId())) {
+                            continue;
+                        }
+
+                        Optional<AbilityUsage> shieldUsageForUser =
+                                abilityUsageRepository
+                                        .findByUserAndLeagueAndStageAndConsumedAndAbility_Code(
+                                                prediction.getUser(),
+                                                league,
+                                                selectedStage,
+                                                false,
+                                                "SHIELD"
+                                        );
+
+                        if (shieldUsageForUser.isPresent()) {
+                            shieldUsageForUser.get().setConsumed(true);
+                            abilityUsageRepository.save(shieldUsageForUser.get());
+                        } else {
+                            predictionRepository.delete(prediction);
+                        }
+                    }
+                }
+
                 break;
 
             case "SHIELD":
