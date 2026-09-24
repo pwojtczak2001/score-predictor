@@ -1,6 +1,5 @@
 package pl.wojtczak.score_predictor.logging;
 
-import jakarta.persistence.Column;
 import org.springframework.stereotype.Component;
 import pl.wojtczak.score_predictor.entity.Match;
 import pl.wojtczak.score_predictor.entity.User;
@@ -12,7 +11,15 @@ import java.time.LocalDateTime;
 @Component
 public class GameEventLogger {
 
-    public void logPointsAwarded(User user, Match match, int points) throws IOException {
+    private void writeToFile(String fileName, String message) {
+        try (FileWriter writer = new FileWriter(fileName, true)) {
+            writer.write(message + System.lineSeparator());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void logPointsAwarded(User user, Match match, int points) {
         String homeTeam = match.getHomeTeam().getDisplayName();
         String awayTeam = match.getAwayTeam().getDisplayName();
 
@@ -25,24 +32,26 @@ public class GameEventLogger {
                 points
         );
 
-        try (FileWriter writer = new FileWriter("points_awarded_log.txt", true)) {
-            writer.write(message + System.lineSeparator());
-        }
+        writeToFile(
+                "points_awarded_log.txt",
+                message
+        );
     }
 
-    public void logHotStreakEntered(User user) throws IOException {
+    public void logHotStreakEntered(User user) {
         String message = String.format(
                 "%s | HOT_STREAK_ENTERED | user=%s",
                 LocalDateTime.now(),
                 user.getUsername()
         );
 
-        try (FileWriter writer = new FileWriter("points_awarded_log.txt", true)) {
-            writer.write(message + System.lineSeparator());
-        }
+        writeToFile(
+                "points_awarded_log.txt",
+                message
+        );
     }
 
-    public void logXpAndCoinsAwarded(User user, String source, int xp, int coins) throws IOException {
+    public void logXpAndCoinsAwarded(User user, String source, int xp, int coins) {
 
         String message = String.format(
                 "%s | user=%s | source=%s | xp=%d | coins=%d",
@@ -53,9 +62,46 @@ public class GameEventLogger {
                 coins
         );
 
-        try (FileWriter writer = new FileWriter("coins_xp_log.txt", true)) {
-            writer.write(message + System.lineSeparator());
+        writeToFile(
+                "coins_xp_log.txt",
+                message
+        );
+    }
+
+    public void logAbilityUsed(
+            User user,
+            String abilityCode,
+            User targetUser,
+            Match targetMatch
+    ) {
+        StringBuilder message = new StringBuilder();
+
+        message.append(String.format(
+                "%s | user=%s | ability=%s",
+                LocalDateTime.now(),
+                user.getUsername(),
+                abilityCode
+        ));
+
+        if (targetUser != null) {
+            message.append(String.format(
+                    " | targetUser=%s",
+                    targetUser.getUsername()
+            ));
         }
+
+        if (targetMatch != null) {
+            message.append(String.format(
+                    " | match=%s vs %s",
+                    targetMatch.getHomeTeam().getDisplayName(),
+                    targetMatch.getAwayTeam().getDisplayName()
+            ));
+        }
+
+        writeToFile(
+                "used_abilities_log.txt",
+                message.toString()
+        );
     }
 
 }

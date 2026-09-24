@@ -11,6 +11,7 @@ import pl.wojtczak.score_predictor.dto.response.CreateLeagueResponse;
 import pl.wojtczak.score_predictor.dto.response.MyLeagueResponse;
 import pl.wojtczak.score_predictor.entity.User;
 import pl.wojtczak.score_predictor.enums.LeagueJoinStatus;
+import pl.wojtczak.score_predictor.exception.LeagueNotFoundException;
 import pl.wojtczak.score_predictor.service.LeagueService;
 import pl.wojtczak.score_predictor.service.UserService;
 
@@ -49,7 +50,7 @@ public class LeagueController {
                     ResponseEntity.ok(status);
 
             case LEAGUE_NOT_FOUND ->
-                    ResponseEntity.status(HttpStatus.NOT_FOUND).body(status);
+                    throw new LeagueNotFoundException(request.getInviteCode());
 
 
             case USER_ALREADY_IN_LEAGUE ->

@@ -47,7 +47,7 @@ public class PredictionController {
             case PREDICTION_ALREADY_EXISTS, MATCH_ALREADY_STARTED ->
                     ResponseEntity.status(HttpStatus.CONFLICT).body(status);
 
-            case PREDICTION_BOMBED ->
+            case PREDICTION_BLOCKED_BY_BOMBED, PREDICTION_BLOCKED_BY_KINGS_ORDER ->
                     ResponseEntity.status(HttpStatus.FORBIDDEN).body(status);
 
             default ->

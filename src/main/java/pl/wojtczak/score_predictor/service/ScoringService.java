@@ -11,8 +11,7 @@ import pl.wojtczak.score_predictor.repository.AbilityUsageRepository;
 import pl.wojtczak.score_predictor.repository.LeagueMemberRepository;
 import pl.wojtczak.score_predictor.repository.PredictionRepository;
 
-import java.io.IOException;
-import java.util.*;
+import java.util.List;
 
 @Service
 public class ScoringService {
@@ -51,16 +50,12 @@ public class ScoringService {
         playerProgressionService.awardXp(user, 5);
         playerProgressionService.awardCoins(user, 5);
 
-        try {
-            gameEventLogger.logXpAndCoinsAwarded(
-                    user,
-                    "HOT_STREAK_ENTRY",
-                    5,
-                    5
-            );
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        gameEventLogger.logXpAndCoinsAwarded(
+                user,
+                "HOT_STREAK_ENTRY",
+                5,
+                5
+        );
     }
 
     private int processHotStreak(User user, PredictionResult predictionResult, int normalAwardedPoints) {
@@ -111,11 +106,8 @@ public class ScoringService {
 
         if (!wasHotStreakActive && hotStreakReached) {
 
-            try {
-                gameEventLogger.logHotStreakEntered(user);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            gameEventLogger.logHotStreakEntered(user);
+
 
             user.setHotStreakActive(true);
 
@@ -202,22 +194,6 @@ public class ScoringService {
     public void calculateAndAwardPoints(Match match){
 
         List<Prediction> predictions = predictionRepository.findByMatch(match);
-        Set<User> users = new HashSet<>();
-
-        for (Prediction prediction : predictions) {
-            users.add(prediction.getUser());
-        }
-
-        List<LeagueMember> allLeagueMembers = leagueMemberRepository.findByUserIn(users);
-        Map<User, List<LeagueMember>> userLeagueMembersMap = new HashMap<>();
-
-        for (LeagueMember leagueMember : allLeagueMembers) {
-            if (!userLeagueMembersMap.containsKey(leagueMember.getUser())) {
-                userLeagueMembersMap.put(leagueMember.getUser(), new ArrayList<>());
-            }
-            userLeagueMembersMap.get(leagueMember.getUser()).add(leagueMember);
-        }
-
 
         for (Prediction prediction : predictions) {
             if(prediction.getPointsAwarded() != null) continue;
@@ -243,16 +219,20 @@ public class ScoringService {
 
             prediction.setPointsAwarded(awardedPoints);
 
-            try {
-                gameEventLogger.logPointsAwarded(prediction.getUser(), match, awardedPoints);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            gameEventLogger.logPointsAwarded(prediction.getUser(), match, awardedPoints);
 
-            userLeagueMembersMap.get(prediction.getUser()).forEach(leagueMember -> {
-                leagueMember.setCurrentPoints(leagueMember.getCurrentPoints() + awardedPoints);
-                leagueMemberRepository.save(leagueMember);
-            });
+            LeagueMember leagueMember = leagueMemberRepository
+                    .findByLeagueAndUser(
+                            prediction.getLeague(),
+                            prediction.getUser()
+                    )
+                    .orElseThrow();
+
+            leagueMember.setCurrentPoints(
+                    leagueMember.getCurrentPoints() + awardedPoints
+            );
+
+            leagueMemberRepository.save(leagueMember);
 
             predictionRepository.save(prediction);
             achievementService.checkExactScoreAchievements(prediction.getUser());

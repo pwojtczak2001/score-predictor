@@ -8,10 +8,8 @@ import pl.wojtczak.score_predictor.dto.response.SpyPredictionResponse;
 import pl.wojtczak.score_predictor.dto.response.SpyTargetUserResponse;
 import pl.wojtczak.score_predictor.entity.*;
 import pl.wojtczak.score_predictor.enums.AbilityType;
-import pl.wojtczak.score_predictor.exception.AbilityNotFoundException;
-import pl.wojtczak.score_predictor.exception.LeagueNotFoundException;
-import pl.wojtczak.score_predictor.exception.PredictionNotFoundException;
-import pl.wojtczak.score_predictor.exception.UserNotMemberOfLeagueException;
+import pl.wojtczak.score_predictor.exception.*;
+import pl.wojtczak.score_predictor.logging.GameEventLogger;
 import pl.wojtczak.score_predictor.repository.*;
 
 import java.util.ArrayList;
@@ -22,30 +20,28 @@ import java.util.Optional;
 public class AbilityService {
 
     private final UserService userService;
-
-    private final MatchService matchService;
     private final AbilityRepository abilityRepository;
     private final LeagueRepository leagueRepository;
     private final LeagueMemberRepository leagueMemberRepository;
     private final MatchRepository matchRepository;
     private final AbilityUsageRepository abilityUsageRepository;
     private final PredictionRepository predictionRepository;
-
+    private final GameEventLogger gameEventLogger;
     private final UserRepository userRepository;
 
     public AbilityService(UserService userService,
-                          MatchService matchService, AbilityRepository abilityRepository,
+                          AbilityRepository abilityRepository,
                           LeagueRepository leagueRepository,
                           LeagueMemberRepository leagueMemberRepository,
-                          MatchRepository matchRepository, AbilityUsageRepository abilityUsageRepository, PredictionRepository predictionRepository, UserRepository userRepository) {
+                          MatchRepository matchRepository, AbilityUsageRepository abilityUsageRepository, PredictionRepository predictionRepository, GameEventLogger gameEventLogger, UserRepository userRepository) {
         this.userService = userService;
-        this.matchService = matchService;
         this.abilityRepository = abilityRepository;
         this.leagueRepository = leagueRepository;
         this.leagueMemberRepository = leagueMemberRepository;
         this.matchRepository = matchRepository;
         this.abilityUsageRepository = abilityUsageRepository;
         this.predictionRepository = predictionRepository;
+        this.gameEventLogger = gameEventLogger;
         this.userRepository = userRepository;
     }
 
@@ -55,7 +51,7 @@ public class AbilityService {
     ) {
 
         if (user.getLevel() < ability.getUnlockLevel()) {
-            throw new IllegalArgumentException(
+            throw new BadRequestException(
                     "User level is too low for this ability"
             );
         }
@@ -67,7 +63,7 @@ public class AbilityService {
     ) {
 
         if (user.getCoins() < ability.getPriceCoins()) {
-            throw new IllegalArgumentException(
+            throw new BadRequestException(
                     "Not enough coins to activate ability"
             );
         }
@@ -95,7 +91,7 @@ public class AbilityService {
                 league,
                 targetUser
         )) {
-            throw new IllegalArgumentException(
+            throw new BadRequestException(
                     "Target user is not a member of the league"
             );
         }
@@ -109,7 +105,7 @@ public class AbilityService {
         if (currentUser.getUserId()
                 .equals(targetUser.getUserId())) {
 
-            throw new IllegalArgumentException(
+            throw new BadRequestException(
                     "User cannot target themselves"
             );
         }
@@ -134,7 +130,7 @@ public class AbilityService {
                         ability.getType()
                 )) {
 
-            throw new IllegalArgumentException(
+            throw new BadRequestException(
                     "User has already used an ability of this type in the selected stage"
             );
         }
@@ -143,7 +139,7 @@ public class AbilityService {
     private void activateHotStreak(User currentUser, Ability ability){
 
         if (abilityUsageRepository.existsByUserAndAbility_Code(currentUser, "HOT_STREAK")) {
-            throw new IllegalArgumentException(
+            throw new BadRequestException(
                     "Hot Streak is already activated");
         }
 
@@ -167,7 +163,7 @@ public class AbilityService {
                 stage,
                 "NOT STARTED"
         )) {
-            throw new IllegalArgumentException(
+            throw new BadRequestException(
                     "Selected stage is no longer active"
             );
         }
@@ -186,7 +182,7 @@ public class AbilityService {
                         "SPY"
                 )
                 .orElseThrow(() ->
-                        new IllegalArgumentException(
+                        new BadRequestException(
                                 "SPY is not active for this stage"
                         )
                 );
@@ -226,7 +222,7 @@ public class AbilityService {
                 request.getStage(),
                 "NOT STARTED"
         )) {
-            throw new IllegalArgumentException(
+            throw new BadRequestException(
                     "Selected stage is no longer active"
             );
         }
@@ -250,13 +246,13 @@ public class AbilityService {
                                 "SPY"
                         )
                         .orElseThrow(() ->
-                                new IllegalArgumentException(
+                                new BadRequestException(
                                         "SPY is not active for this stage"
                                 )
                         );
 
         if (spyUsage.getTargetUser() != null) {
-            throw new IllegalArgumentException(
+            throw new BadRequestException(
                     "SPY target has already been selected"
             );
         }
@@ -264,9 +260,7 @@ public class AbilityService {
         User targetUser = userRepository.findById(
                 request.getTargetUserId()
         ).orElseThrow(() ->
-                new IllegalArgumentException(
-                        "Target user not found"
-                )
+                new UserNotFoundException(request.getTargetUserId())
         );
 
         validateTargetUserLeagueMembership(
@@ -287,7 +281,7 @@ public class AbilityService {
                 );
 
         if (!hasPrediction) {
-            throw new IllegalArgumentException(
+            throw new BadRequestException(
                     "Target user has no predictions in this stage"
             );
         }
@@ -295,6 +289,13 @@ public class AbilityService {
         spyUsage.setTargetUser(targetUser);
 
         abilityUsageRepository.save(spyUsage);
+
+        gameEventLogger.logAbilityUsed(
+                currentUser,
+                "SPY",
+                targetUser,
+                null
+        );
     }
 
     public List<SpyPredictionResponse> getSpyPredictions(
@@ -307,7 +308,7 @@ public class AbilityService {
                 stage,
                 "NOT STARTED"
         )) {
-            throw new IllegalArgumentException(
+            throw new BadRequestException(
                     "Selected stage is no longer active"
             );
         }
@@ -331,13 +332,13 @@ public class AbilityService {
                                 "SPY"
                         )
                         .orElseThrow(() ->
-                                new IllegalArgumentException(
+                                new BadRequestException(
                                         "SPY is not active for this stage"
                                 )
                         );
 
         if (spyUsage.getTargetUser() == null) {
-            throw new IllegalArgumentException(
+            throw new BadRequestException(
                     "SPY target has not been selected"
             );
         }
@@ -389,7 +390,7 @@ public class AbilityService {
         }
 
         if (request.getStage() == null) {
-            throw new IllegalArgumentException(
+            throw new BadRequestException(
                     "Stage is required for this ability"
             );
         }
@@ -400,13 +401,13 @@ public class AbilityService {
                 request.getStage(),
                 "NOT STARTED"
         )) {
-            throw new IllegalArgumentException(
+            throw new BadRequestException(
                     "Selected stage is no longer active"
             );
         }
 
         if (request.getLeagueId() == null) {
-            throw new IllegalArgumentException(
+            throw new BadRequestException(
                     "League is required for this ability"
             );
         }
@@ -432,13 +433,13 @@ public class AbilityService {
                 );
 
                 if (request.getTargetMatchId() != null) {
-                    throw new IllegalArgumentException(
+                    throw new BadRequestException(
                             "Target match is not allowed for Spy"
                     );
                 }
 
                 if (request.getTargetUserId() != null) {
-                    throw new IllegalArgumentException(
+                    throw new BadRequestException(
                             "Target user is not allowed when activating Spy"
                     );
                 }
@@ -456,13 +457,13 @@ public class AbilityService {
                 );
 
                 if (request.getTargetMatchId() == null) {
-                    throw new IllegalArgumentException(
+                    throw new BadRequestException(
                             "Target match is required for this ability"
                     );
                 }
 
                 if (request.getTargetUserId() == null) {
-                    throw new IllegalArgumentException(
+                    throw new BadRequestException(
                             "Target user is required for this ability"
                     );
                 }
@@ -470,13 +471,13 @@ public class AbilityService {
                 targetMatch = matchRepository
                         .findById(request.getTargetMatchId())
                         .orElseThrow(() ->
-                                new IllegalArgumentException("Match not found")
+                                new MatchNotFoundException(request.getTargetMatchId())
                         );
 
                 targetUser = userRepository
                         .findById(request.getTargetUserId())
                         .orElseThrow(() ->
-                                new IllegalArgumentException("Target user not found")
+                                new UserNotFoundException(request.getTargetUserId())
                         );
 
                 validateTargetUserLeagueMembership(
@@ -489,13 +490,13 @@ public class AbilityService {
                 );
 
                 if (!targetMatch.getStage().equals(selectedStage)) {
-                    throw new IllegalArgumentException(
+                    throw new BadRequestException(
                             "Target match is not in the selected stage"
                     );
                 }
 
                 if (!targetMatch.getStatus().equals("NOT STARTED")) {
-                    throw new IllegalArgumentException(
+                    throw new BadRequestException(
                             "Target match is no longer available"
                     );
                 }
@@ -517,7 +518,7 @@ public class AbilityService {
                                     );
 
                     if (alreadyLockedByAnotherUser) {
-                        throw new IllegalArgumentException(
+                        throw new BadRequestException(
                                 "This prediction is already locked"
                         );
                     }
@@ -536,7 +537,19 @@ public class AbilityService {
                 if (shieldUsage.isPresent()) {
                     shieldUsage.get().setConsumed(true);
                     abilityUsageRepository.save(shieldUsage.get());
-                    break;
+                    currentUser.setCoins(
+                            currentUser.getCoins() - ability.getPriceCoins()
+                    );
+                    userRepository.save(currentUser);
+
+                    gameEventLogger.logAbilityUsed(
+                            currentUser,
+                            ability.getCode(),
+                            targetUser,
+                            targetMatch
+                    );
+
+                    return;
                 }
 
                 if ("BOMB".equals(ability.getCode())) {
@@ -564,13 +577,13 @@ public class AbilityService {
                 );
 
                 if (request.getTargetMatchId() == null) {
-                    throw new IllegalArgumentException(
+                    throw new BadRequestException(
                             "Target match is required for this ability"
                     );
                 }
 
                 if (request.getTargetUserId() != null) {
-                    throw new IllegalArgumentException(
+                    throw new BadRequestException(
                             "Target user is not allowed for this ability"
                     );
                 }
@@ -578,17 +591,17 @@ public class AbilityService {
                 targetMatch = matchRepository
                         .findById(request.getTargetMatchId())
                         .orElseThrow(() ->
-                                new IllegalArgumentException("Match not found")
+                                new MatchNotFoundException(request.getTargetMatchId())
                         );
 
                 if (!targetMatch.getStage().equals(selectedStage)) {
-                    throw new IllegalArgumentException(
+                    throw new BadRequestException(
                             "Target match is not in the selected stage"
                     );
                 }
 
                 if (!targetMatch.getStatus().equals("NOT STARTED")) {
-                    throw new IllegalArgumentException(
+                    throw new BadRequestException(
                             "Target match is no longer available"
                     );
                 }
@@ -635,7 +648,7 @@ public class AbilityService {
                 if (request.getTargetMatchId() != null
                         || request.getTargetUserId() != null) {
 
-                    throw new IllegalArgumentException(
+                    throw new BadRequestException(
                             "Shield does not require targets"
                     );
                 }
@@ -656,7 +669,7 @@ public class AbilityService {
                 if (request.getTargetMatchId() != null
                         || request.getTargetUserId() != null) {
 
-                    throw new IllegalArgumentException(
+                    throw new BadRequestException(
                             "Joker does not require targets"
                     );
                 }
@@ -664,7 +677,7 @@ public class AbilityService {
                 break;
 
             default:
-                throw new IllegalArgumentException(
+                throw new BadRequestException(
                         "Unsupported ability code"
                 );
         }
@@ -678,11 +691,21 @@ public class AbilityService {
                 targetUser,
                 consumed);
 
+
+
         abilityUsageRepository.save(usage);
         currentUser.setCoins(
                 currentUser.getCoins() - ability.getPriceCoins()
         );
         userRepository.save(currentUser);
+
+        gameEventLogger.logAbilityUsed(
+                currentUser,
+                ability.getCode(),
+                targetUser,
+                targetMatch
+        );
+
     }
 
 }

@@ -11,7 +11,6 @@ import pl.wojtczak.score_predictor.repository.AchievementRepository;
 import pl.wojtczak.score_predictor.repository.PredictionRepository;
 import pl.wojtczak.score_predictor.repository.UserAchievementRepository;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,16 +47,12 @@ public class AchievementService {
 
         playerProgressionService.awardCoins(user, achievement.getCoinsReward());
 
-        try {
-            gameEventLogger.logXpAndCoinsAwarded(
+        gameEventLogger.logXpAndCoinsAwarded(
                     user,
                     "ACHIEVEMENT_" + achievement.getCode(),
                     0,
                     achievement.getCoinsReward()
             );
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     public void checkExactScoreAchievements(User user) {

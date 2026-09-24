@@ -5,10 +5,13 @@ import org.springframework.stereotype.Service;
 import pl.wojtczak.score_predictor.dto.imports.MatchImportDto;
 import pl.wojtczak.score_predictor.entity.Match;
 import pl.wojtczak.score_predictor.entity.Team;
+import pl.wojtczak.score_predictor.exception.BadRequestException;
+
 import java.time.format.DateTimeFormatter;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 
 @Service
@@ -27,9 +30,117 @@ public class MatchImportService {
         this.matchService = matchService;
     }
 
+    private void validateMatchImportData(
+            MatchImportDto matchImportDto,
+            Map<String, Team> teamsMap
+    ) {
+
+        if (matchImportDto.getMatchId() == null
+                || matchImportDto.getMatchId().isBlank()) {
+
+            throw new BadRequestException(
+                    "Match ID is required"
+            );
+        }
+
+        if (matchImportDto.getStage() == null
+                || matchImportDto.getStage().isBlank()) {
+
+            throw new BadRequestException(
+                    "Stage is required for match '"
+                            + matchImportDto.getMatchId() + "'"
+            );
+        }
+
+        if (matchImportDto.getDate() == null
+                || matchImportDto.getDate().isBlank()) {
+
+            throw new BadRequestException(
+                    "Date is required for match '"
+                            + matchImportDto.getMatchId() + "'"
+            );
+        }
+
+        try {
+            LocalDateTime.parse(
+                    matchImportDto.getDate(),
+                    formatter
+            );
+        } catch (DateTimeParseException e) {
+            throw new BadRequestException(
+                    "Invalid date format for match '"
+                            + matchImportDto.getMatchId()
+                            + "'. Expected format: dd.MM.yyyy HH:mm"
+            );
+        }
+
+        if (matchImportDto.getHomeTeam() == null
+                || matchImportDto.getHomeTeam().getName() == null
+                || matchImportDto.getHomeTeam().getName().isBlank()) {
+
+            throw new BadRequestException(
+                    "Home team is required for match '"
+                            + matchImportDto.getMatchId() + "'"
+            );
+        }
+
+        if (matchImportDto.getAwayTeam() == null
+                || matchImportDto.getAwayTeam().getName() == null
+                || matchImportDto.getAwayTeam().getName().isBlank()) {
+
+            throw new BadRequestException(
+                    "Away team is required for match '"
+                            + matchImportDto.getMatchId() + "'"
+            );
+        }
+
+        if (!teamsMap.containsKey(
+                matchImportDto.getHomeTeam().getName()
+        )) {
+
+            throw new BadRequestException(
+                    "Home team '"
+                            + matchImportDto.getHomeTeam().getName()
+                            + "' not found for match '"
+                            + matchImportDto.getMatchId() + "'"
+            );
+        }
+
+        if (!teamsMap.containsKey(
+                matchImportDto.getAwayTeam().getName()
+        )) {
+
+            throw new BadRequestException(
+                    "Away team '"
+                            + matchImportDto.getAwayTeam().getName()
+                            + "' not found for match '"
+                            + matchImportDto.getMatchId() + "'"
+            );
+        }
+
+        if (matchImportDto.getResult() == null) {
+
+            throw new BadRequestException(
+                    "Result is required for match '"
+                            + matchImportDto.getMatchId() + "'"
+            );
+        }
+    }
+
     @Transactional
     public void importMatches() throws IOException {
+
         List<MatchImportDto> matches = jsonFileService.loadMatches();
+        List<Team> teams = teamService.getAllTeams();
+        Map<String, Team> teamsMap = new HashMap<>();
+
+        for (Team team : teams) {
+            teamsMap.put(team.getName(), team);
+        }
+
+        for (MatchImportDto matchImportDto : matches) {
+            validateMatchImportData(matchImportDto, teamsMap);
+        }
 
         matches.sort(
                 Comparator.comparing(
@@ -42,18 +153,10 @@ public class MatchImportService {
         );
 
         Map<String, Match> existingMatchesMap = new HashMap<>();
-        List<Team> teams = teamService.getAllTeams();
-        Map<String, Team> teamsMap = new HashMap<>();
-
-        for (Team team : teams) {
-            teamsMap.put(team.getName(), team);
-        }
 
         for (Match match : matchService.getAllMatches()){
             existingMatchesMap.put(match.getExternalMatchId(), match);
         }
-
-        // TODO: Validate imported match data before parsing (date, teams, result)
 
         for (MatchImportDto matchImportDto : matches) {
 

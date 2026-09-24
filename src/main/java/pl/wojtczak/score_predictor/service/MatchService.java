@@ -6,10 +6,7 @@ import pl.wojtczak.score_predictor.entity.League;
 import pl.wojtczak.score_predictor.entity.Match;
 import pl.wojtczak.score_predictor.entity.Prediction;
 import pl.wojtczak.score_predictor.entity.User;
-import pl.wojtczak.score_predictor.exception.LeagueNotFoundException;
-import pl.wojtczak.score_predictor.exception.MatchAlreadyExistsException;
-import pl.wojtczak.score_predictor.exception.MatchNotFoundException;
-import pl.wojtczak.score_predictor.exception.UserNotMemberOfLeagueException;
+import pl.wojtczak.score_predictor.exception.*;
 import pl.wojtczak.score_predictor.repository.LeagueMemberRepository;
 import pl.wojtczak.score_predictor.repository.LeagueRepository;
 import pl.wojtczak.score_predictor.repository.MatchRepository;
@@ -127,7 +124,7 @@ public class MatchService {
         Match currentMatch = matchRepository
                 .findFirstByStatusNotOrderByMatchDateAsc("FINISHED")
                 .orElseThrow(() ->
-                        new IllegalStateException("No active or upcoming stage found")
+                        new BadRequestException("No active or upcoming stage found")
                 );
 
         return currentMatch.getStage();

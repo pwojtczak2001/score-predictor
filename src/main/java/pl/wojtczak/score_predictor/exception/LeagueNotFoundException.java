@@ -6,4 +6,8 @@ public class LeagueNotFoundException extends RuntimeException {
         super("League with ID '" + leagueId + "' not found.");
     }
 
+    public LeagueNotFoundException(String inviteCode) {
+        super("League with invite code '" + inviteCode + "' not found.");
+    }
+
 }
