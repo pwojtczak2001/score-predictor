@@ -1,5 +1,6 @@
 package pl.wojtczak.score_predictor.controller;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.wojtczak.score_predictor.dto.request.AbilityActivationRequest;
@@ -12,6 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/abilities")
+@SecurityRequirement(name = "bearerAuth")
 public class AbilityController {
 
     private final AbilityService abilityService;

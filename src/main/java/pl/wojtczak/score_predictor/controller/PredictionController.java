@@ -1,5 +1,7 @@
 package pl.wojtczak.score_predictor.controller;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +19,7 @@ import pl.wojtczak.score_predictor.service.UserService;
 
 @RestController
 @RequestMapping("/predictions")
+@SecurityRequirement(name = "bearerAuth")
 public class PredictionController {
 
     private final PredictionService predictionService;
@@ -34,7 +37,7 @@ public class PredictionController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<PredictionOperationStatus> createPrediction(@RequestBody PredictionRequest request){
+    public ResponseEntity<PredictionOperationStatus> createPrediction(@Valid @RequestBody PredictionRequest request){
         User currentUser = userService.getCurrentUser();
         Match match = matchService.getMatchByExternalId(request.getExternalMatchId());
         League league = leagueRepository.findById(request.getLeagueId())
@@ -56,7 +59,7 @@ public class PredictionController {
     }
 
     @PutMapping("/update")
-    public ResponseEntity<PredictionOperationStatus> updatePrediction(@RequestBody PredictionRequest request){
+    public ResponseEntity<PredictionOperationStatus> updatePrediction(@Valid @RequestBody PredictionRequest request){
         User currentUser = userService.getCurrentUser();
         Match match = matchService.getMatchByExternalId(request.getExternalMatchId());
         League league = leagueRepository.findById(request.getLeagueId())

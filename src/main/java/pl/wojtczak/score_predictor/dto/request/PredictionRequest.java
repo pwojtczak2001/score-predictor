@@ -1,10 +1,22 @@
 package pl.wojtczak.score_predictor.dto.request;
 
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+
 public class PredictionRequest {
 
+    @NotBlank
     private String externalMatchId;
+    @NotNull
+    @Min(0)
     private Integer predictedHomeScore;
+    @NotNull
+    @Min(0)
     private Integer predictedAwayScore;
+    @NotNull
+    @Positive
     private Integer leagueId;
 
     public PredictionRequest() {
