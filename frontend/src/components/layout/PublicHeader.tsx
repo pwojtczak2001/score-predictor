@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { Link } from "react-router-dom"
 import "./PublicHeader.css"
 
 function PublicHeader() {
@@ -21,13 +22,13 @@ function PublicHeader() {
             </div>
 
             <nav className="public-header__actions">
-                <button className="public-header__login">
+                <Link to="/login" className="public-header__login">
                     Zaloguj
-                </button>
+                </Link>
 
-                <button className="public-header__register">
+                <Link to="/register" className="public-header__register">
                     Załóż konto
-                </button>
+                </Link>
             </nav>
 
             <button className="public-header__menu" 
@@ -37,12 +38,12 @@ function PublicHeader() {
 
             {isMenuOpen && (
                 <nav className="public-header__mobile-menu">
-                    <button className="public-header__login">
+                    <Link to="/login" className="public-header__login">
                         Zaloguj
-                    </button>
-                    <button className="public-header__register">
+                    </Link>
+                    <Link to="/register" className="public-header__register">
                         Załóż konto
-                    </button>
+                    </Link>
                 </nav>
             )}
 
