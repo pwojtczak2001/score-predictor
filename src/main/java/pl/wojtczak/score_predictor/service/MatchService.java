@@ -2,6 +2,7 @@ package pl.wojtczak.score_predictor.service;
 
 import org.springframework.stereotype.Service;
 import pl.wojtczak.score_predictor.dto.response.UpcomingMatchResponse;
+import pl.wojtczak.score_predictor.dto.response.UpcomingThreeMatchesResponse;
 import pl.wojtczak.score_predictor.entity.League;
 import pl.wojtczak.score_predictor.entity.Match;
 import pl.wojtczak.score_predictor.entity.Prediction;
@@ -110,6 +111,26 @@ public class MatchService {
                     prediction.map(Prediction::getPredictedHomeScore).orElse(null),
                     prediction.map(Prediction::getPredictedAwayScore).orElse(null)
             ));
+        }
+        return upcomingMatchesResponse;
+    }
+
+    public List<UpcomingThreeMatchesResponse> getUpcomingThreeMatches(){
+
+        List<UpcomingThreeMatchesResponse> upcomingMatchesResponse = new ArrayList<>();
+        List<Match> upcomingMatches = matchRepository.findByStatusOrderByMatchDateAsc("NOT STARTED");
+
+        for (Match match : upcomingMatches.stream().limit(3).toList()) {
+            upcomingMatchesResponse.add(new UpcomingThreeMatchesResponse(
+                    match.getExternalMatchId(),
+                    match.getHomeTeam().getName(),
+                    match.getAwayTeam().getName(),
+                    match.getStage(),
+                    match.getHomeTeam().getLogoUrl(),
+                    match.getAwayTeam().getLogoUrl(),
+                    match.getMatchDate(),
+                    match.getStatus()));
+
         }
         return upcomingMatchesResponse;
     }

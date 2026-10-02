@@ -1,0 +1,128 @@
+.public-header {
+    
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+
+    height: 80px;
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0 24px;
+    background-color: #ffffff;
+}
+
+.public-header__logo {
+    display: flex;
+    align-items: center;
+}
+
+.public-header__logo-desktop {
+    height: 64px;
+    width: auto;
+}
+
+.public-header__logo-mobile {
+    display: none;
+}
+
+.public-header__actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.public-header__login,
+.public-header__register {
+    border: none;
+    background: none;
+
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.public-header__register {
+    padding: 10px 18px;
+
+    border-radius: 999px;
+    border: 4px solid #db5d09;
+
+    background-color: #db5d09;
+    color: #ffffff;
+}
+
+.public-header__register:hover {
+    border-color: #000000;
+    background-color: #022b63;
+}
+
+.public-header__login {
+    padding: 10px 18px;
+
+    border-radius: 999px;
+    border: 4px solid #d9976b;
+
+    background-color: #d9976b;
+    color: #ffffff;
+}
+
+.public-header__login:hover {
+    border-color: #000000;
+    background-color: #022b63;
+}
+
+.public-header__menu {
+    display: none;
+
+    border: none;
+    background: none;
+
+    font-size: 24px;
+    cursor: pointer;
+}
+
+@media (max-width: 840px) {
+    .public-header__logo-desktop {
+        display: none;
+    }
+
+    .public-header__logo-mobile {
+        display: block;
+        height: 44px;
+        width: auto;
+    }
+
+    .public-header__actions {
+        display: none;
+    }
+
+    .public-header__menu {
+        display: block;
+    }
+
+    .public-header__mobile-menu .public-header__login,
+    .public-header__mobile-menu .public-header__register {
+        width: 100%;
+        border-bottom: 5px solid #000000;
+    }
+}
+
+.public-header__mobile-menu {
+    position: absolute;
+    top: 80px;
+    left: 0;
+
+    width: 100%;
+
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    padding: 16px 24px;
+
+    background-color: #ffffff;
+    border-bottom: 5px solid #000000;
+}

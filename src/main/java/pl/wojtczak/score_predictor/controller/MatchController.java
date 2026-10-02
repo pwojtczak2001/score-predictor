@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import pl.wojtczak.score_predictor.dto.response.UpcomingMatchResponse;
+import pl.wojtczak.score_predictor.dto.response.UpcomingThreeMatchesResponse;
 import pl.wojtczak.score_predictor.entity.User;
 import pl.wojtczak.score_predictor.service.MatchService;
 import pl.wojtczak.score_predictor.service.UserService;
@@ -37,4 +38,8 @@ public class MatchController {
         return ResponseEntity.ok(matchService.getUpcomingMatches(currentUser, leagueId));
     }
 
+    @GetMapping("/three/upcoming")
+    public ResponseEntity<List<UpcomingThreeMatchesResponse>> getUpcomingThreeMatches() {
+        return ResponseEntity.ok(matchService.getUpcomingThreeMatches());
+    }
 }

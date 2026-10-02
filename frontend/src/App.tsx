@@ -1,9 +1,7 @@
-import './App.css'
+import PublicLayout from "./components/layout/PublicLayout"
 
 function App() {
-  return (
-      <h1>Score Predictior</h1>
-  )
+    return <PublicLayout />
 }
 
 export default App
