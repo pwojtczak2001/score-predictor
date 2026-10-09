@@ -123,8 +123,8 @@ public class MatchService {
         for (Match match : upcomingMatches.stream().limit(3).toList()) {
             upcomingMatchesResponse.add(new UpcomingThreeMatchesResponse(
                     match.getExternalMatchId(),
-                    match.getHomeTeam().getName(),
-                    match.getAwayTeam().getName(),
+                    match.getHomeTeam().getDisplayName(),
+                    match.getAwayTeam().getDisplayName(),
                     match.getStage(),
                     match.getHomeTeam().getLogoUrl(),
                     match.getAwayTeam().getLogoUrl(),
